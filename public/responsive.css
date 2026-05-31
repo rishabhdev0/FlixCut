@@ -120,13 +120,20 @@ button,a,input{min-width:0}
 
 /* Background remover editor needs special handling after upload. */
 @media (max-width: 900px){
-  .editor{height:auto!important;min-height:calc(100vh - 74px)!important;display:flex!important;flex-direction:column!important}
-  .editor-shell{display:flex!important;flex-direction:column!important;height:auto!important;min-height:0!important}
-  .toolbar{order:1!important;width:100%!important;height:auto!important;display:flex!important;flex-direction:row!important;overflow-x:auto!important;overflow-y:hidden!important;padding:8px!important;border-right:0!important;border-bottom:5px solid var(--ink,#181818)!important}
-  .tsep{width:2px!important;height:34px!important;margin:0 4px!important;flex:0 0 auto!important}
-  .workspace{order:2!important;min-height:58vh!important;height:58vh!important;border-right:0!important}
-  .side{order:3!important;width:100%!important;max-height:none!important;overflow:visible!important;border-left:0!important;border-top:5px solid var(--ink,#181818)!important}
-  .action-bar,.ai-row{flex-wrap:wrap!important;gap:8px!important}
-  .action-bar .btn,.ai-row .btn{flex:1 1 150px!important}
-  .size-menu{left:10px!important;right:10px!important;width:auto!important;max-width:none!important}
+  #editor-screen{height:auto!important;min-height:calc(100vh - 74px)!important;overflow-y:auto!important;overflow-x:hidden!important;display:flex!important;flex-direction:column!important}
+  .ed-layout{display:flex!important;flex-direction:column!important;height:auto!important;min-height:0!important;overflow:visible!important;padding:10px!important;gap:12px!important}
+  .canvas-area{order:1!important;min-height:520px!important;height:auto!important;overflow:hidden!important}
+  .c-topbar,.tool-bar,.act-bar{flex-shrink:0!important}
+  .c-container{flex:0 0 clamp(300px,58vh,430px)!important;min-height:300px!important;height:clamp(300px,58vh,430px)!important;overflow:hidden!important}
+  .toolbar{order:2!important;width:100%!important;height:auto!important;display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;overflow-x:auto!important;overflow-y:hidden!important;padding:8px!important;border-right:0!important;border-bottom:5px solid var(--ink,#181818)!important}
+  .t-sep{width:2px!important;height:34px!important;margin:0 4px!important;flex:0 0 auto!important}
+  .right-panel{order:3!important;width:100%!important;max-height:none!important;overflow:visible!important;border-left:0!important;border-top:5px solid var(--ink,#181818)!important}
+  .tool-bar,.act-bar{flex-wrap:wrap!important;gap:8px!important}
+  .tool-bar .btn,.act-bar .btn{flex:1 1 145px!important;justify-content:center!important}
+  .size-dd{left:10px!important;right:10px!important;width:auto!important;max-width:none!important}
+}
+
+@media (max-width: 560px){
+  .canvas-area{min-height:500px!important}
+  .c-container{flex-basis:300px!important;min-height:300px!important;height:300px!important}
 }
