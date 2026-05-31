@@ -120,20 +120,23 @@ button,a,input{min-width:0}
 
 /* Background remover editor needs special handling after upload. */
 @media (max-width: 900px){
-  #editor-screen{height:auto!important;min-height:calc(100vh - 74px)!important;overflow-y:auto!important;overflow-x:hidden!important;display:flex!important;flex-direction:column!important}
-  .ed-layout{display:flex!important;flex-direction:column!important;height:auto!important;min-height:0!important;overflow:visible!important;padding:10px!important;gap:12px!important}
-  .canvas-area{order:1!important;min-height:520px!important;height:auto!important;overflow:hidden!important}
-  .c-topbar,.tool-bar,.act-bar{flex-shrink:0!important}
-  .c-container{flex:0 0 clamp(300px,58vh,430px)!important;min-height:300px!important;height:clamp(300px,58vh,430px)!important;overflow:hidden!important}
-  .toolbar{order:2!important;width:100%!important;height:auto!important;display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;overflow-x:auto!important;overflow-y:hidden!important;padding:8px!important;border-right:0!important;border-bottom:5px solid var(--ink,#181818)!important}
-  .t-sep{width:2px!important;height:34px!important;margin:0 4px!important;flex:0 0 auto!important}
-  .right-panel{order:3!important;width:100%!important;max-height:none!important;overflow:visible!important;border-left:0!important;border-top:5px solid var(--ink,#181818)!important}
-  .tool-bar,.act-bar{flex-wrap:wrap!important;gap:8px!important}
-  .tool-bar .btn,.act-bar .btn{flex:1 1 145px!important;justify-content:center!important}
-  .size-dd{left:10px!important;right:10px!important;width:auto!important;max-width:none!important}
+  .page-wrap{overflow-y:auto!important;overflow-x:hidden!important}
+  #editor-screen{height:auto!important;min-height:0!important;flex:0 0 auto!important;overflow:visible!important;flex-direction:column!important}
+  #editor-screen .ed-layout{display:flex!important;flex-direction:column!important;height:auto!important;min-height:0!important;overflow:visible!important;padding:10px!important;gap:12px!important}
+  #editor-screen .canvas-area{order:1!important;min-height:520px!important;height:auto!important;overflow:hidden!important}
+  #editor-screen .c-topbar,#editor-screen .tool-bar,#editor-screen .act-bar{flex-shrink:0!important}
+  #editor-screen .c-container{flex:0 0 clamp(300px,58vh,430px)!important;min-height:300px!important;height:clamp(300px,58vh,430px)!important;overflow:hidden!important}
+  #editor-screen .toolbar{order:2!important;width:100%!important;height:auto!important;display:grid!important;grid-template-columns:repeat(6,minmax(40px,1fr))!important;gap:8px!important;overflow:visible!important;padding:12px!important;border:4px solid var(--ink,#181818)!important;border-radius:16px!important;background:#fff!important;box-shadow:5px 5px 0 var(--ink,#181818)!important}
+  #editor-screen .tbtn{width:100%!important;height:42px!important;border-radius:10px!important}
+  #editor-screen .t-sep{display:none!important}
+  #editor-screen .right-panel{order:3!important;width:100%!important;max-height:none!important;overflow:visible!important;border-left:0!important;border-top:5px solid var(--ink,#181818)!important}
+  #editor-screen .tool-bar,#editor-screen .act-bar{flex-wrap:wrap!important;gap:8px!important}
+  #editor-screen .tool-bar .btn,#editor-screen .act-bar .btn{flex:1 1 145px!important;justify-content:center!important}
+  #editor-screen .size-dd{left:10px!important;right:10px!important;width:auto!important;max-width:none!important}
+  .page-wrap>.priv{margin:10px!important;border:4px solid var(--ink,#181818)!important;border-radius:16px!important;box-shadow:5px 5px 0 var(--ink,#181818)!important;order:99!important}
 }
 
 @media (max-width: 560px){
-  .canvas-area{min-height:500px!important}
-  .c-container{flex-basis:300px!important;min-height:300px!important;height:300px!important}
+  #editor-screen .canvas-area{min-height:500px!important}
+  #editor-screen .c-container{flex-basis:300px!important;min-height:300px!important;height:300px!important}
 }
