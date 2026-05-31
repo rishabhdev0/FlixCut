@@ -1,0 +1,8 @@
+# Keep GitHub's language bar focused on source code, not legacy HTML shells.
+public/tools/*.html linguist-vendored
+legacy-index.html linguist-vendored
+index.html linguist-vendored
+
+# Build output and bundled runtime files should not affect repo language stats.
+dist/** linguist-generated
+public/vendor/** linguist-vendored
