@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="theme-color" content="#ffdf5b"/>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
+<base target="_top"/>
+<meta name="description" content="PixCut — Free browser-based file toolkit. Remove backgrounds, convert files, merge PDFs and more. Zero uploads. Works offline."/>
+<title>PixCut — Free Browser File Toolkit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#181818;--paper:#fbfaf2;--panel:#fffef9;--soft:#f3efe4;--muted:#817d73;
+  --y:#ffdf5b;--r:#ac9a9c;--c:#a68e2e;--o:#ff8b4a;--g:#d1d8c3;--pu:#857796;
+  --shadow:4px 4px 0 var(--ink);--shadow-sm:2px 2px 0 var(--ink);
+  --fb:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --fh:'Space Grotesk',system-ui,sans-serif;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--fb);background:var(--paper);color:var(--ink);min-height:100vh;font-weight:600;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+h1,h2,h3,h4,h5,h6{font-family:var(--fh);font-weight:800}
+button,input{font-family:inherit;cursor:pointer}
+a{text-decoration:none;color:inherit}
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-thumb{background:var(--ink);border:2px solid var(--paper);border-radius:99px}
+.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 700,'GRAD' 0,'opsz' 48;user-select:none}
+
+/* ── NAV ── */
+.nav{background:var(--y);border-bottom:5px solid var(--ink);padding:0 24px;position:sticky;top:0;z-index:1000}
+.nav-inner{max-width:1200px;margin:0 auto;height:72px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.logo-bolt{width:46px;height:46px;background:#fff;border:2.5px solid var(--ink);border-radius:10px;display:grid;place-items:center;box-shadow:var(--shadow-sm);flex-shrink:0}
+.logo-bolt .material-symbols-outlined{color:var(--o);font-size:35px}
+.logo-text{font-size:34px;font-weight:800;letter-spacing:-1px;line-height:1;color:var(--ink)}
+.nav-links{display:flex;align-items:center;gap:6px}
+.nav-link{border:2.5px solid var(--ink);border-radius:10px;background:#fff;color:var(--ink);box-shadow:var(--shadow-sm);font-size:12px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:9px 14px;white-space:nowrap;transition:.14s}
+.nav-link:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--ink)}
+.nav-r{display:flex;align-items:center;gap:8px}
+.nbtn{display:inline-flex;align-items:center;gap:7px;padding:10px 16px;border:2.5px solid var(--ink);border-radius:10px;font-size:13px;font-weight:700;box-shadow:var(--shadow-sm);transition:.14s;white-space:nowrap}
+.nbtn:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--ink)}
+.nbtn-ghost{background:#fff;color:var(--ink)}
+.nbtn-ink{background:var(--ink);color:var(--y)}
+.nbtn-red{background:#ff6670;color:#fff}
+.ham{display:none;width:40px;height:40px;background:#fff;border:2.5px solid var(--ink);border-radius:10px;place-items:center;box-shadow:var(--shadow-sm)}
+
+/* ── HERO ── */
+.hero{padding:80px 24px 72px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(24,24,24,.03) 39px,rgba(24,24,24,.03) 40px),repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(24,24,24,.03) 39px,rgba(24,24,24,.03) 40px);pointer-events:none}
+.hero-inner{max-width:860px;margin:0 auto;position:relative}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--o);color:var(--ink);border:2.5px solid var(--ink);border-radius:6px;padding:7px 16px;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;box-shadow:var(--shadow-sm);transform:rotate(-1.5deg);margin-bottom:28px}
+/* hero headline */
+.hero-h1{font-size:clamp(44px,7.5vw,88px);font-weight:800;letter-spacing:-2px;line-height:1.05;margin-bottom:28px;color:var(--ink)}
+/* riftcut-style yellow box on File Toolkit */
+.hero-highlight{
+  display:inline-block;
+  background:var(--y);
+  border:4px solid var(--ink);
+  border-radius:10px;
+  padding:0 24px 6px;
+  margin-top:4px;
+  box-shadow:5px 5px 0 var(--ink);
+  line-height:1.15;
+}
+.hero-desc{font-size:17px;color:var(--muted);line-height:1.6;max-width:580px;margin:0 auto 40px;font-weight:500}
+.hero-ctas{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap}
+.cta-main{display:inline-flex;align-items:center;gap:9px;background:var(--ink);color:var(--y);border:2.5px solid var(--ink);border-radius:12px;padding:15px 28px;font-size:16px;font-weight:700;box-shadow:var(--shadow);transition:.14s}
+.cta-main:hover{transform:translate(-3px,-3px);box-shadow:10px 10px 0 var(--ink)}
+.cta-sec{display:inline-flex;align-items:center;gap:9px;background:var(--y);color:var(--ink);border:2.5px solid var(--ink);border-radius:12px;padding:15px 28px;font-size:16px;font-weight:700;box-shadow:var(--shadow);transition:.14s}
+.cta-sec:hover{transform:translate(-3px,-3px);box-shadow:10px 10px 0 var(--ink)}
+.hero-badges{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:28px;flex-wrap:wrap}
+.badge{display:inline-flex;align-items:center;gap:6px;background:#fff;border:2.5px solid var(--ink);border-radius:99px;padding:6px 14px;font-size:11px;font-weight:700;box-shadow:2px 2px 0 var(--ink)}
+
+/* ── TICKER ── */
+.ticker{background:var(--ink);color:var(--y);border-top:5px solid var(--ink);border-bottom:5px solid var(--ink);padding:16px 0;overflow:hidden;white-space:nowrap}
+.ticker-track{display:inline-flex;animation:ticker 24s linear infinite}
+.ticker-track:hover{animation-play-state:paused}
+.ticker-item{display:inline-flex;align-items:center;gap:12px;padding:0 28px;font-size:13px;font-weight:700;letter-spacing:.8px;text-transform:uppercase}
+.ticker-dot{width:6px;height:6px;border-radius:50%;background:var(--o);flex-shrink:0}
+@keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* ── TOOLS SECTION ── */
+.section{padding:80px 24px}
+.section-inner{max-width:1200px;margin:0 auto}
+.section-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:40px;gap:20px;flex-wrap:wrap}
+.section-eyebrow{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.section-title{font-size:clamp(32px,5vw,50px);font-weight:800;letter-spacing:-1.5px;line-height:.95}
+.section-title em{color:var(--o);font-style:normal}
+.section-desc{font-size:15px;color:var(--muted);font-weight:600;line-height:1.5;max-width:320px}
+
+/* ══════════════════════════════════
+   TOOL CARDS — one accent per card
+   ══════════════════════════════════ */
+.tc-yellow{--tc-clr:var(--y);--tc-txt:var(--ink)}
+.tc-red   {--tc-clr:var(--r);--tc-txt:#fff}
+.tc-cyan  {--tc-clr:var(--c);--tc-txt:var(--ink)}
+.tc-orange{--tc-clr:var(--o);--tc-txt:var(--ink)}
+.tc-green {--tc-clr:var(--g);--tc-txt:var(--ink)}
+.tc-purple{--tc-clr:var(--pu);--tc-txt:#fff}
+.tc-ink   {--tc-clr:var(--ink);--tc-txt:var(--y)}
+
+.tools-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:30px}
+
+.tool-card{
+  background:var(--panel);
+  border:3px solid var(--ink);
+  /* NO colored top stripe — accent lives in the banner background */
+  border-radius:20px;
+  box-shadow:var(--shadow);
+  overflow:hidden;
+  display:flex;flex-direction:column;
+  transition:.16s;cursor:pointer;
+}
+.tool-card:hover{transform:translate(-3px,-3px);box-shadow:10px 10px 0 var(--ink)}
+
+/* Banner: dot-pattern base + strong accent wash — matches Image 2 */
+.tc-banner{
+  height:165px;
+  display:flex;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;
+  border-bottom:3px solid var(--ink);
+  background-color:var(--soft);
+  background-image:radial-gradient(circle,rgba(24,24,24,.08) 1px,transparent 1px);
+  background-size:18px 18px;
+}
+.tc-banner::before{
+  content:'';position:absolute;inset:0;
+  background:var(--tc-clr);
+  opacity:.26;   /* stronger wash so each card's color is clearly visible */
+  pointer-events:none;
+}
+/* Larger icon box — matches Image 2 */
+.tc-banner-icon{
+  width:88px;height:88px;
+  background:var(--tc-clr);
+  border:3px solid var(--ink);
+  border-radius:18px;
+  display:grid;place-items:center;
+  box-shadow:5px 5px 0 var(--ink);
+  z-index:1;flex-shrink:0;
+}
+.tc-banner-icon .material-symbols-outlined{
+  color:var(--tc-txt);font-size:44px;
+}
+/* Badge: text-only, no icon prefix */
+.tc-badge{
+  position:absolute;top:12px;right:14px;
+  background:var(--ink);color:var(--y);
+  font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;
+  padding:4px 10px;border-radius:6px;z-index:2;
+}
+
+.tc-body{padding:16px 20px 12px;flex:1;display:flex;flex-direction:column;gap:6px}
+.tc-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+.tc-title{font-size:20px;font-weight:800;letter-spacing:-.3px;line-height:1.1}
+.tc-desc{font-size:13px;color:var(--muted);font-weight:600;line-height:1.5;flex:1}
+
+.tc-footer{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 20px;
+  border-top:3px solid var(--ink);
+  background:var(--soft);
+  gap:8px;
+}
+.tc-tags{display:flex;gap:5px;flex-wrap:wrap}
+.tc-tag{
+  font-size:10px;font-weight:700;
+  padding:3px 8px;border-radius:4px;
+  border:2px solid var(--ink);
+  background:#fff;color:var(--ink);
+  box-shadow:1px 1px 0 var(--ink);
+}
+.tc-tag:first-child{background:var(--tc-clr);color:var(--tc-txt)}
+.tc-btn{
+  display:inline-flex;align-items:center;gap:5px;
+  background:var(--tc-clr);color:var(--tc-txt);
+  border:2.5px solid var(--ink);border-radius:8px;
+  padding:7px 12px;font-size:12px;font-weight:700;
+  box-shadow:var(--shadow-sm);transition:.14s;white-space:nowrap;flex-shrink:0;
+}
+.tc-btn:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 var(--ink)}
+.tc-btn .material-symbols-outlined{font-size:14px}
+
+/* ── WHY SECTION — riftcut style, light bg ── */
+.why-section{padding:60px 24px 52px;background:var(--paper);border-top:2px solid rgba(24,24,24,.08)}
+.why-inner{max-width:1100px;margin:0 auto}
+.why-heading{font-size:clamp(22px,3vw,30px);font-weight:800;letter-spacing:-.5px;margin-bottom:36px;color:var(--ink)}
+.why-cols{display:grid;grid-template-columns:repeat(3,1fr);gap:48px;margin-bottom:44px}
+.why-col-title{font-size:15px;font-weight:800;letter-spacing:-.2px;margin-bottom:10px;color:var(--ink)}
+.why-col-desc{font-size:14px;color:var(--muted);font-weight:500;line-height:1.65}
+.why-tools-label{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+.why-pills{display:flex;gap:8px;flex-wrap:wrap}
+.why-pill{
+  display:inline-flex;
+  background:#fff;
+  border:2px solid var(--ink);
+  border-radius:8px;
+  padding:8px 18px;
+  font-size:13px;font-weight:700;
+  box-shadow:2px 2px 0 var(--ink);
+  transition:.12s;
+  color:var(--ink);
+}
+.why-pill:hover{background:var(--ink);color:var(--y);transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--ink)}
+
+/* ── FOOTER — cyan bar exactly like riftcut ── */
+.footer{
+  background:var(--c);
+  border-top:3px solid var(--ink);
+  padding:18px 24px;
+}
+.footer-inner{
+  max-width:1200px;margin:0 auto;
+  display:flex;align-items:center;
+  justify-content:space-between;
+  gap:16px;flex-wrap:wrap;
+}
+.footer-left{font-size:13px;font-weight:700;color:var(--ink)}
+.footer-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.footer-right span{font-size:12px;font-weight:700;color:var(--ink);opacity:.65}
+
+/* ── MOBILE MENU ── */
+.mobile-menu{display:none;position:fixed;inset:0;background:var(--y);z-index:2000;flex-direction:column;padding:24px}
+.mobile-menu.open{display:flex}
+.mm-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:40px}
+.mm-close{width:44px;height:44px;background:#fff;border:2.5px solid var(--ink);border-radius:10px;display:grid;place-items:center;box-shadow:var(--shadow-sm)}
+.mm-links{display:flex;flex-direction:column;gap:10px}
+.mm-link{display:flex;align-items:center;justify-content:space-between;background:#fff;border:2.5px solid var(--ink);border-radius:12px;padding:15px 18px;font-size:15px;font-weight:700;box-shadow:var(--shadow-sm)}
+
+@media(max-width:960px){.nav-links{display:none}.ham{display:grid}.why-cols{grid-template-columns:1fr 1fr;gap:32px}}
+@media(max-width:700px){.hero{padding:52px 24px 56px}.why-cols{grid-template-columns:1fr;gap:24px}}
+@media(max-width:500px){.hero-ctas{flex-direction:column;align-items:stretch}.cta-main,.cta-sec{justify-content:center}.footer-right{display:none}}
+</style>
+<link rel="stylesheet" href="/responsive.css"/>
+</head>
+<body>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobile-menu">
+  <div class="mm-header">
+    <div class="logo">
+      <div class="logo-bolt"><span class="material-symbols-outlined" style="color:var(--o)">content_cut</span></div>
+      <span class="logo-text">PixCut</span>
+    </div>
+    <button class="mm-close" id="mm-close">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+  </div>
+  <div class="mm-links">
+    <a class="mm-link" href="tools/bg-remover.html">Background Remover <span class="material-symbols-outlined" style="font-size:18px">arrow_forward</span></a>
+    <a class="mm-link" href="tools/file-converter.html">File Converter <span class="material-symbols-outlined" style="font-size:18px">arrow_forward</span></a>
+    <a class="mm-link" href="tools/merge-pdf.html">Merge PDFs <span class="material-symbols-outlined" style="font-size:18px">arrow_forward</span></a>
+    <a class="mm-link" href="tools/image-compress.html">Image Compressor <span class="material-symbols-outlined" style="font-size:18px">arrow_forward</span></a>
+    <a class="mm-link" href="tools/add-image-pdf.html">Add Image to PDF <span class="material-symbols-outlined" style="font-size:18px">arrow_forward</span></a>
+    <a class="mm-link" href="tools/scan-to-pdf.html">Scan to PDF <span class="material-symbols-outlined" style="font-size:18px">arrow_forward</span></a>
+    <a class="mm-link" href="tools/compress-pdf.html">Compress PDF <span class="material-symbols-outlined" style="font-size:18px">arrow_forward</span></a>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="logo" href="#">
+      <div class="logo-bolt"><span class="material-symbols-outlined">content_cut</span></div>
+      <span class="logo-text">PixCut</span>
+    </a>
+    <div class="nav-links">
+      <a class="nav-link" href="tools/bg-remover.html">BG Remover</a>
+      <a class="nav-link" href="tools/file-converter.html">Converter</a>
+      <a class="nav-link" href="tools/merge-pdf.html">Merge PDF</a>
+      <a class="nav-link" href="tools/image-compress.html">Compress</a>
+      <a class="nav-link" href="tools/scan-to-pdf.html">Scan PDF</a>
+    </div>
+    <div class="nav-r">
+      <a class="nbtn nbtn-ghost" href="#tools">
+        <span class="material-symbols-outlined" style="font-size:16px">grid_view</span>
+        All Tools
+      </a>
+      <a class="nbtn nbtn-red" href="#">
+        <span class="material-symbols-outlined" style="font-size:16px">favorite</span>
+        Support
+      </a>
+      <button class="ham" id="ham" aria-label="Menu">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">
+      <span class="material-symbols-outlined" style="font-size:14px">bolt</span>
+      Free &amp; 100% Private
+    </div>
+    <h1 class="hero-h1">
+      Your All-In-One<br/>
+      <span class="hero-highlight">File Toolkit</span>
+    </h1>
+    <p class="hero-desc">Remove backgrounds, convert files, merge PDFs, and more. Everything runs in your browser — your files never leave your device.</p>
+    <div class="hero-ctas">
+      <a class="cta-main" href="tools/bg-remover.html">
+        <span class="material-symbols-outlined" style="font-size:20px">bolt</span>
+        Start for Free
+      </a>
+      <a class="cta-sec" href="#tools">
+        <span class="material-symbols-outlined" style="font-size:20px">grid_view</span>
+        See All Tools
+      </a>
+    </div>
+    <div class="hero-badges">
+      <span class="badge"><span class="material-symbols-outlined" style="font-size:13px">lock</span> Zero Uploads</span>
+      <span class="badge"><span class="material-symbols-outlined" style="font-size:13px">wifi_off</span> Works Offline</span>
+      <span class="badge"><span class="material-symbols-outlined" style="font-size:13px">auto_awesome</span> AI Powered</span>
+      <span class="badge"><span class="material-symbols-outlined" style="font-size:13px">sell</span> 100% Free</span>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker" aria-hidden="true">
+  <div class="ticker-track">
+    <span class="ticker-item"><span class="ticker-dot"></span>Remove Background</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Convert Images</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Merge PDFs</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Compress Images</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Add Images to PDF</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Scan to PDF</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Compress PDF</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Zero Uploads</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Remove Background</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Convert Images</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Merge PDFs</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Compress Images</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Add Images to PDF</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Scan to PDF</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Compress PDF</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Zero Uploads</span>
+  </div>
+</div>
+
+<!-- TOOLS -->
+<section class="section" id="tools">
+  <div class="section-inner">
+    <div class="section-header">
+      <div>
+        <div class="section-eyebrow">What you can do</div>
+        <div class="section-title">All the tools<br/><em>you actually need</em></div>
+      </div>
+      <p class="section-desc">7 powerful tools. All free. All running locally in your browser. No account needed.</p>
+    </div>
+    <div class="tools-grid">
+
+      <!-- ① BG Remover → rose/red -->
+      <div class="tool-card tc-red" onclick="location.href='tools/bg-remover.html'">
+        <div class="tc-banner">
+          <div class="tc-badge"><span class="material-symbols-outlined">auto_awesome</span> AI</div>
+          <div class="tc-banner-icon"><span class="material-symbols-outlined">imagesmode</span></div>
+        </div>
+        <div class="tc-body">
+          <div class="tc-label">AI Powered</div>
+          <div class="tc-title">Background Remover</div>
+          <div class="tc-desc">One-click AI removal plus magic wand and pixel brush tools. Works on any image instantly.</div>
+        </div>
+        <div class="tc-footer">
+          <div class="tc-tags"><span class="tc-tag">AI</span><span class="tc-tag">Magic Wand</span><span class="tc-tag">Brush</span></div>
+          <a class="tc-btn" href="tools/bg-remover.html">Open <span class="material-symbols-outlined">arrow_forward</span></a>
+        </div>
+      </div>
+
+      <!-- ② File Converter → cyan -->
+      <div class="tool-card tc-cyan" onclick="location.href='tools/file-converter.html'">
+        <div class="tc-banner">
+          <div class="tc-badge">20+</div>
+          <div class="tc-banner-icon"><span class="material-symbols-outlined">sync_alt</span></div>
+        </div>
+        <div class="tc-body">
+          <div class="tc-label">20 Features</div>
+          <div class="tc-title">File Converter</div>
+          <div class="tc-desc">Convert images between formats, images to PDF, PDF to images. Batch, filters, resize, watermark, ZIP download.</div>
+        </div>
+        <div class="tc-footer">
+          <div class="tc-tags"><span class="tc-tag">Images</span><span class="tc-tag">PDF</span><span class="tc-tag">Batch</span></div>
+          <a class="tc-btn" href="tools/file-converter.html">Open <span class="material-symbols-outlined">arrow_forward</span></a>
+        </div>
+      </div>
+
+      <!-- ③ Merge PDF → orange -->
+      <div class="tool-card tc-orange" onclick="location.href='tools/merge-pdf.html'">
+        <div class="tc-banner">
+          <div class="tc-badge"><span class="material-symbols-outlined">lock</span> AES</div>
+          <div class="tc-banner-icon"><span class="material-symbols-outlined">merge_type</span></div>
+        </div>
+        <div class="tc-body">
+          <div class="tc-label">Encrypted Output</div>
+          <div class="tc-title">Merge PDFs</div>
+          <div class="tc-desc">Combine PDFs and images into one document. Page ranges, rotation, watermark, password protection.</div>
+        </div>
+        <div class="tc-footer">
+          <div class="tc-tags"><span class="tc-tag">PDF</span><span class="tc-tag">Images</span><span class="tc-tag">Secure</span></div>
+          <a class="tc-btn" href="tools/merge-pdf.html">Open <span class="material-symbols-outlined">arrow_forward</span></a>
+        </div>
+      </div>
+
+      <!-- ④ Image Compressor → sage green -->
+      <div class="tool-card tc-green" onclick="location.href='tools/image-compress.html'">
+        <div class="tc-banner">
+          <div class="tc-badge"><span class="material-symbols-outlined">target</span> Smart</div>
+          <div class="tc-banner-icon"><span class="material-symbols-outlined">photo_size_select_large</span></div>
+        </div>
+        <div class="tc-body">
+          <div class="tc-label">Target Size</div>
+          <div class="tc-title">Image Compressor</div>
+          <div class="tc-desc">Hit any target file size precisely. Binary-search algorithm finds the exact quality to reach 200KB or any size.</div>
+        </div>
+        <div class="tc-footer">
+          <div class="tc-tags"><span class="tc-tag">Smart</span><span class="tc-tag">Batch</span><span class="tc-tag">Target KB</span></div>
+          <a class="tc-btn" href="tools/image-compress.html">Open <span class="material-symbols-outlined">arrow_forward</span></a>
+        </div>
+      </div>
+
+      <!-- ⑤ Add Image to PDF → purple -->
+      <div class="tool-card tc-purple" onclick="location.href='tools/add-image-pdf.html'">
+        <div class="tc-banner">
+          <div class="tc-badge">Visual</div>
+          <div class="tc-banner-icon"><span class="material-symbols-outlined">add_photo_alternate</span></div>
+        </div>
+        <div class="tc-body">
+          <div class="tc-label">Visual Editor</div>
+          <div class="tc-title">Add Image to PDF</div>
+          <div class="tc-desc">Drag images directly onto any PDF page. Resize, reposition, adjust opacity. Download the modified PDF instantly.</div>
+        </div>
+        <div class="tc-footer">
+          <div class="tc-tags"><span class="tc-tag">Drag</span><span class="tc-tag">Resize</span><span class="tc-tag">PDF</span></div>
+          <a class="tc-btn" href="tools/add-image-pdf.html">Open <span class="material-symbols-outlined">arrow_forward</span></a>
+        </div>
+      </div>
+
+      <!-- ⑥ Scan to PDF → yellow -->
+      <div class="tool-card tc-yellow" onclick="location.href='tools/scan-to-pdf.html'">
+        <div class="tc-banner">
+          <div class="tc-badge"><span class="material-symbols-outlined">photo_camera</span></div>
+          <div class="tc-banner-icon"><span class="material-symbols-outlined">document_scanner</span></div>
+        </div>
+        <div class="tc-body">
+          <div class="tc-label">Camera + Upload</div>
+          <div class="tc-title">Scan to PDF</div>
+          <div class="tc-desc">Use your camera or upload photos. Auto-enhance contrast, remove shadows. Download as a clean multi-page PDF.</div>
+        </div>
+        <div class="tc-footer">
+          <div class="tc-tags"><span class="tc-tag">Camera</span><span class="tc-tag">Filters</span><span class="tc-tag">Multi-page</span></div>
+          <a class="tc-btn" href="tools/scan-to-pdf.html">Open <span class="material-symbols-outlined">arrow_forward</span></a>
+        </div>
+      </div>
+
+      <!-- ⑦ Compress PDF → ink/dark -->
+      <div class="tool-card tc-ink" onclick="location.href='tools/compress-pdf.html'">
+        <div class="tc-banner">
+          <div class="tc-badge">Lossless</div>
+          <div class="tc-banner-icon"><span class="material-symbols-outlined">compress</span></div>
+        </div>
+        <div class="tc-body">
+          <div class="tc-label">Size Reduction</div>
+          <div class="tc-title">Compress PDF</div>
+          <div class="tc-desc">Shrink PDF file size without losing quality. Downsample images, strip metadata, and optimize for web or email.</div>
+        </div>
+        <div class="tc-footer">
+          <div class="tc-tags"><span class="tc-tag">PDF</span><span class="tc-tag">Optimize</span><span class="tc-tag">Web</span></div>
+          <a class="tc-btn" href="tools/compress-pdf.html">Open <span class="material-symbols-outlined">arrow_forward</span></a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- WHY — riftcut style: light bg, 3 plain columns, pill tool links -->
+<section class="why-section">
+  <div class="why-inner">
+    <h2 class="why-heading">Why PixCut?</h2>
+    <div class="why-cols">
+      <div class="why-col">
+        <div class="why-col-title">100% Private</div>
+        <div class="why-col-desc">Every tool runs entirely in your browser. Your files are never uploaded to any server. No accounts, no tracking, no data collection.</div>
+      </div>
+      <div class="why-col">
+        <div class="why-col-title">Free Forever</div>
+        <div class="why-col-desc">All tools are completely free with no limits. No watermarks on your files, no daily caps, no premium tiers.</div>
+      </div>
+      <div class="why-col">
+        <div class="why-col-title">Works Offline</div>
+        <div class="why-col-desc">Once loaded, PixCut works without an internet connection. Process sensitive documents without any network requests.</div>
+      </div>
+    </div>
+    <div class="why-tools-label">Available Tools</div>
+    <div class="why-pills">
+      <a class="why-pill" href="tools/bg-remover.html">Background Remover</a>
+      <a class="why-pill" href="tools/file-converter.html">File Converter</a>
+      <a class="why-pill" href="tools/merge-pdf.html">Merge PDFs &amp; Images</a>
+      <a class="why-pill" href="tools/image-compress.html">Image Compressor</a>
+      <a class="why-pill" href="tools/add-image-pdf.html">Add Images to PDF</a>
+      <a class="why-pill" href="tools/scan-to-pdf.html">Scan to PDF</a>
+      <a class="why-pill" href="tools/compress-pdf.html">Compress PDF</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER — cyan bar exactly like riftcut -->
+<footer class="footer">
+  <div class="footer-inner">
+    <span class="footer-left">100% private — all processing happens in your browser</span>
+    <div class="footer-right">
+      <span>Free forever</span>
+      <span>·</span>
+      <span>Zero uploads</span>
+      <span>·</span>
+      <span>Works offline</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+document.getElementById('ham').addEventListener('click',()=>document.getElementById('mobile-menu').classList.add('open'));
+document.getElementById('mm-close').addEventListener('click',()=>document.getElementById('mobile-menu').classList.remove('open'));
+document.getElementById('mobile-menu').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
+</script>
+</body>
+</html>

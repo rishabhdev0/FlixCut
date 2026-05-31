@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
+<script>
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+window.scrollTo(0, 0);
+</script>
+<meta name="theme-color" content="#ffdf5b"/>
+<title>Compress PDF — PixCut</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#181818;--paper:#fbfaf2;--panel:#fffef9;--soft:#f3efe4;--muted:#817d73;--line:#d9d3c8;
+  --y:#ffdf5b;--r:#ff6670;--c:#50c7e8;--o:#ff8b4a;--g:#a7ff00;--pu:#9b5de5;
+  --shadow:8px 8px 0 var(--ink);--shadow-sm:5px 5px 0 var(--ink);--shadow-xs:3px 3px 0 var(--ink);
+  --fb:'DM Sans',system-ui,sans-serif;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--fb);background:var(--paper);color:var(--ink);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased;font-weight:800}
+button,input{font-family:inherit;cursor:pointer}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-thumb{background:var(--ink);border:2px solid var(--paper);border-radius:99px}
+input[type=range]{-webkit-appearance:none;width:100%;height:6px;background:#e7e0cf;border:2.5px solid var(--ink);border-radius:99px;outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;background:var(--y);border:3px solid var(--ink);border-radius:50%;cursor:pointer;box-shadow:var(--shadow-xs)}
+
+.toast{position:fixed;left:50%;bottom:22px;z-index:9999;transform:translateX(-50%) translateY(110px);background:var(--ink);color:#fff;border:4px solid var(--y);border-radius:14px;padding:11px 18px;font-size:13px;font-weight:900;box-shadow:var(--shadow-sm);transition:.28s cubic-bezier(.2,1.4,.4,1);white-space:nowrap;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* NAV */
+.nav{background:var(--y);border-bottom:5px solid var(--ink);padding:0 22px;position:sticky;top:0;z-index:1000}
+.nav-inner{max-width:1200px;margin:0 auto;height:68px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink)}
+.logo-bolt{width:42px;height:42px;background:#fff;border:2.5px solid var(--ink);border-radius:10px;display:grid;place-items:center;box-shadow:var(--shadow-xs);flex-shrink:0}
+.logo-text{font-size:36px;font-weight:900;letter-spacing:-2px;line-height:1}
+.nav-pills{display:flex;align-items:center;gap:8px}
+.npill{border:3px solid var(--ink);border-radius:8px;background:#fff;color:var(--ink);box-shadow:var(--shadow-xs);font-size:11px;font-weight:900;letter-spacing:1.2px;text-transform:uppercase;padding:8px 12px;white-space:nowrap}
+.nav-r{display:flex;align-items:center;gap:8px}
+.nbtn{display:inline-flex;align-items:center;gap:7px;border:2.5px solid var(--ink);border-radius:10px;background:#fff;color:var(--ink);box-shadow:var(--shadow-sm);font-size:12px;font-weight:900;letter-spacing:.8px;text-transform:uppercase;padding:10px 15px;transition:.13s}
+.nbtn:hover{transform:translate(-2px,-2px);box-shadow:8px 8px 0 var(--ink)}
+.nbtn.red{background:var(--r);color:#fff}
+
+/* PAGE */
+.page{max-width:1100px;margin:0 auto;padding:28px 16px 52px}
+.tool-header{text-align:center;margin-bottom:28px}
+.eyebrow{display:inline-flex;align-items:center;gap:7px;background:var(--pu);color:#fff;border:2.5px solid var(--ink);border-radius:7px;padding:7px 14px;font-size:12px;font-weight:900;letter-spacing:1.6px;text-transform:uppercase;box-shadow:var(--shadow-xs);margin-bottom:14px;transform:rotate(-1deg)}
+.tool-h1{font-size:clamp(48px,8vw,82px);font-weight:900;letter-spacing:-3px;line-height:.9;margin-bottom:10px}
+.tool-h1 em{color:var(--pu);font-style:normal;text-decoration:underline;text-decoration-thickness:4px;text-underline-offset:4px}
+.tool-desc{font-size:15px;color:var(--muted);line-height:1.6;max-width:520px;margin:0 auto;font-weight:700}
+
+/* COMPRESSION LEVELS */
+.levels-wrap{max-width:860px;margin:0 auto 28px}
+.lw-label{font-size:12px;font-weight:900;letter-spacing:1.6px;text-transform:uppercase;color:var(--muted);margin-bottom:14px;text-align:center}
+.levels-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media(max-width:600px){.levels-grid{grid-template-columns:repeat(2,1fr)}}
+.lv{background:#fff;border:5px solid var(--line);border-radius:18px;padding:20px 14px;text-align:center;cursor:pointer;transition:.14s;position:relative;box-shadow:var(--shadow-xs)}
+.lv:hover{border-color:var(--ink);transform:translate(-2px,-2px);box-shadow:var(--shadow-sm)}
+.lv.on{border-color:var(--ink);box-shadow:var(--shadow-sm)}
+.lv.on{
+  background:#fff7cf!important;
+  border-color:var(--ink)!important;
+  transform:translate(-4px,-4px)!important;
+  box-shadow:12px 12px 0 var(--ink)!important;
+}
+.lv.on::after{
+  content:'SELECTED';
+  position:absolute;
+  top:10px;
+  right:10px;
+  background:var(--ink);
+  color:#fff;
+  border:2px solid var(--ink);
+  border-radius:6px;
+  padding:3px 7px;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.8px;
+  line-height:1;
+}
+.lv.on .lv-icon{
+  transform:translate(-2px,-2px)!important;
+  box-shadow:8px 8px 0 var(--ink)!important;
+}
+.lv.on .lv-name{text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:4px}
+.lv-icon{width:52px;height:52px;border-radius:12px;border:2.5px solid var(--ink);display:grid;place-items:center;margin:0 auto 12px;box-shadow:var(--shadow-xs);transition:.14s}
+.lv:hover .lv-icon,.lv.on .lv-icon{transform:translate(-1px,-1px);box-shadow:var(--shadow-sm)}
+.lv-name{font-size:18px;font-weight:900;letter-spacing:-.3px;margin-bottom:5px}
+.lv-desc{font-size:11px;color:var(--muted);font-weight:700;line-height:1.4;margin-bottom:10px}
+.lv-badge{display:inline-block;font-size:10px;font-weight:900;padding:4px 10px;border-radius:6px;border:3px solid var(--ink);text-transform:uppercase;letter-spacing:.5px;box-shadow:2px 2px 0 var(--ink)}
+
+/* DROP ZONE */
+.drop-zone{position:relative;background:#fff;border:5px solid var(--ink);border-radius:24px;padding:44px 28px;text-align:center;cursor:pointer;box-shadow:var(--shadow);transition:.15s;max-width:860px;margin:0 auto 28px}
+.drop-zone:hover,.drop-zone.dov{transform:translate(-3px,-3px);box-shadow:12px 12px 0 var(--ink);background:#f5edff}
+#file-input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.dz-icon{width:70px;height:70px;background:var(--soft);border:5px solid var(--ink);border-radius:14px;display:grid;place-items:center;box-shadow:var(--shadow-sm);margin:0 auto 18px;color:var(--ink);transition:.15s}
+.drop-zone:hover .dz-icon{background:var(--pu);color:#fff;transform:translate(-2px,-2px);box-shadow:8px 8px 0 var(--ink)}
+.dz-title{font-size:28px;font-weight:900;letter-spacing:-.7px;margin-bottom:6px}
+.dz-or{font-size:13px;color:var(--muted);font-weight:700;margin-bottom:14px}
+.dz-cta{display:inline-flex;align-items:center;gap:7px;background:var(--ink);color:#fff;border:2.5px solid var(--ink);border-radius:10px;padding:11px 22px;font-size:14px;font-weight:900;box-shadow:var(--shadow-xs);pointer-events:none}
+.dz-hint{font-size:12px;color:var(--muted);font-weight:700;margin-top:11px;line-height:1.6}
+
+/* MAIN LAYOUT */
+.main-layout{display:grid;grid-template-columns:minmax(0,1fr) 284px;gap:18px;max-width:1100px;margin:0 auto}
+@media(max-width:900px){.main-layout{grid-template-columns:1fr}}
+
+/* FILE CARDS */
+.file-cards{display:flex;flex-direction:column;gap:12px}
+.fc{background:#fff;border:5px solid var(--ink);border-radius:20px;overflow:hidden;box-shadow:var(--shadow-sm);transition:border-color .15s}
+.fc.fc-done{border-color:var(--ink)}
+.fc.fc-error{border-color:var(--r)}
+.fc-body{display:flex;align-items:flex-start;gap:14px;padding:18px}
+.fc-pdf-icon{width:52px;height:64px;background:var(--soft);border:2.5px solid var(--ink);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;gap:5px;box-shadow:3px 3px 0 var(--ink)}
+.fc-type{font-size:9px;font-weight:900;background:var(--r);color:#fff;border:2px solid var(--ink);border-radius:3px;padding:2px 6px;letter-spacing:.5px;text-transform:uppercase}
+.fc-pages-num{font-size:9px;color:var(--muted);font-weight:900}
+.fc-info{flex:1;min-width:0}
+.fc-name{font-size:14px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:7px}
+.fc-sizes{display:flex;align-items:center;gap:9px;margin-bottom:9px;flex-wrap:wrap}
+.fc-before{font-size:14px;font-weight:700;color:var(--muted)}
+.fc-arrow{color:var(--line);display:flex;align-items:center}
+.fc-after{font-size:18px;font-weight:900}
+.fc-after.good{color:#3d8a00}
+.fc-after.same{color:var(--muted)}
+.fc-saving{font-size:13px;font-weight:900;padding:3px 10px;border-radius:7px;border:3px solid var(--ink);box-shadow:2px 2px 0 var(--ink)}
+.fc-saving.good{background:var(--g);color:var(--ink)}
+.fc-saving.bad{background:var(--soft);color:var(--muted)}
+/* Progress */
+.fc-prog-wrap{height:8px;background:var(--soft);border:3px solid var(--ink);border-radius:99px;overflow:hidden;margin-bottom:7px}
+.fc-prog-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--pu),var(--c));border-radius:99px;transition:width .4s ease}
+.fc-status-text{font-size:11px;font-weight:800;color:var(--muted)}
+.fc-btns{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0}
+.fc-btn{display:inline-flex;align-items:center;gap:5px;background:#fff;color:var(--ink);border:3px solid var(--ink);border-radius:9px;padding:7px 12px;font-size:12px;font-weight:900;box-shadow:var(--shadow-xs);transition:.12s;white-space:nowrap}
+.fc-btn:hover{background:var(--y);transform:translate(-1px,-1px);box-shadow:var(--shadow-sm)}
+.fc-btn.dl{color:#3d8a00;border-color:var(--ink)}
+.fc-btn.dl:hover{background:var(--g)}
+.fc-btn.del:hover{background:#fff0f1;color:var(--r)}
+.fc-btn:disabled{opacity:.3;cursor:not-allowed;transform:none;box-shadow:var(--shadow-xs)}
+
+/* Add more */
+.add-more-card{background:#fff;border:5px dashed var(--line);border-radius:20px;padding:16px;text-align:center;cursor:pointer;transition:.13s;position:relative;box-shadow:var(--shadow-xs)}
+.add-more-card:hover{border-color:var(--ink);background:var(--soft)}
+#add-more-input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.amc-inner{display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;font-weight:900;color:var(--muted)}
+.add-more-card:hover .amc-inner{color:var(--ink)}
+
+/* Empty */
+.empty-card{background:#fff;border:5px solid var(--ink);border-radius:20px;padding:52px 20px;text-align:center;box-shadow:var(--shadow-sm)}
+.ec-icon{width:64px;height:64px;background:var(--soft);border:2.5px solid var(--ink);border-radius:12px;display:grid;place-items:center;color:var(--muted);margin:0 auto 12px;box-shadow:var(--shadow-sm)}
+.ec-title{font-size:24px;font-weight:900;letter-spacing:-.5px;margin-bottom:5px}
+.ec-sub{font-size:13px;color:var(--muted);font-weight:700}
+
+/* RIGHT PANEL */
+.right-panel{display:flex;flex-direction:column;gap:13px;position:sticky;top:84px;max-height:calc(100vh - 100px);overflow-y:auto;padding-right:3px}
+.panel{background:#fff;border:2.5px solid var(--ink);border-radius:18px;overflow:hidden;box-shadow:var(--shadow-sm)}
+.ph{display:flex;align-items:center;justify-content:space-between;background:var(--soft);border-bottom:4px solid var(--ink);padding:12px 14px;cursor:pointer;user-select:none}
+.ph-title{font-size:12px;font-weight:900;letter-spacing:1.6px;text-transform:uppercase}
+.ph-chev{color:var(--ink);transition:.2s;display:flex;align-items:center}
+.panel.coll .ph-chev{transform:rotate(-90deg)}
+.panel.coll .pb{display:none}
+.pb{padding:14px;display:flex;flex-direction:column;gap:11px}
+.lbl{font-size:11px;font-weight:900;letter-spacing:1.1px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.info-box{background:var(--soft);border:3px solid var(--line);border-radius:10px;padding:12px}
+.ir{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.ir:last-child{margin-bottom:0}
+.il{font-size:12px;color:var(--muted);font-weight:800}
+.iv{font-size:12px;font-weight:900}
+.iv.pu{color:var(--pu)}.iv.g{color:#3d8a00}
+.tog-row{display:flex;align-items:center;justify-content:space-between;background:var(--soft);border:3px solid var(--line);border-radius:10px;padding:9px 12px}
+.tl{font-size:12px;font-weight:900;color:var(--muted)}
+.tog{font-size:10px;font-weight:900;padding:5px 11px;background:#fff;color:var(--muted);border:3px solid var(--line);border-radius:7px;box-shadow:var(--shadow-xs);transition:.15s;text-transform:uppercase;letter-spacing:1px}
+.tog.on{background:var(--y);color:var(--ink);border-color:var(--ink)}
+.sl-row{margin-bottom:7px}
+.sl-row:last-child{margin-bottom:0}
+.sl-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.sl-lbl{font-size:12px;font-weight:800;color:var(--muted)}
+.sl-v{font-size:11px;font-weight:900;background:var(--y);color:var(--ink);border:3px solid var(--ink);padding:2px 7px;border-radius:6px;min-width:42px;text-align:center;box-shadow:var(--shadow-xs)}
+.savings-total{background:var(--soft);border:3px solid var(--line);border-radius:10px;padding:12px;text-align:center}
+.st-val{font-size:28px;font-weight:900;color:#3d8a00;letter-spacing:-.5px}
+.st-lbl{font-size:11px;font-weight:900;color:var(--muted);letter-spacing:.5px;margin-top:3px}
+.btn-compress{width:100%;display:flex;align-items:center;justify-content:center;gap:9px;background:var(--pu);color:#fff;border:2.5px solid var(--ink);border-radius:12px;padding:15px;font-size:16px;font-weight:900;box-shadow:var(--shadow-sm);transition:.14s}
+.btn-compress:hover:not(:disabled){transform:translate(-2px,-2px);box-shadow:8px 8px 0 var(--ink)}
+.btn-compress:disabled{opacity:.35;cursor:not-allowed;transform:none}
+.btn-ghost-full{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;background:#fff;color:var(--muted);border:3px solid var(--line);border-radius:10px;padding:11px;font-size:13px;font-weight:900;box-shadow:var(--shadow-xs);transition:.12s}
+.btn-ghost-full:hover{border-color:var(--ink);color:var(--ink);background:var(--soft)}
+.priv{background:var(--c);border:5px solid var(--ink);border-radius:0;padding:18px 24px;margin-top:18px;box-shadow:var(--shadow)}
+.priv span{font-size:14px;font-weight:900;color:var(--ink);line-height:1.4}
+
+@media(max-width:900px){.nav-pills{display:none}.right-panel{position:static;max-height:none}}
+@media(max-width:640px){.logo-bolt{display:none}.page{padding:22px 12px 40px}.levels-grid{grid-template-columns:repeat(2,1fr)}.fc-body{flex-wrap:wrap}.fc-btns{flex-direction:row}}
+.layout-fix-anchor{position:relative}
+html,body{width:100%;min-height:100%;scroll-padding-top:92px}
+body{overflow-y:auto;scrollbar-gutter:stable}
+.page{width:min(1200px,100%);margin:0 auto}
+.main-layout{width:min(1200px,calc(100% - 36px));margin:0 auto;align-items:start}
+.right-panel{align-self:start}
+@media(max-height:760px){
+  .page{padding-top:20px}
+  .tool-header{margin-bottom:20px}
+  .levels-grid{margin-bottom:20px}
+  .drop-zone{padding-top:24px;padding-bottom:24px}
+  .right-panel{top:86px;max-height:calc(100vh - 96px)}
+}
+/* Stable app layout, like bg-remover: nav stays clean, page scroll is hidden, panels stay separated. */
+html,body{height:100%;overflow:hidden}
+body{display:flex;flex-direction:column}
+.nav{position:relative;top:auto;flex-shrink:0}
+.page{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;padding-bottom:72px}
+.page::-webkit-scrollbar{width:0;height:0;display:none}
+.right-panel{position:sticky;top:18px;max-height:calc(100vh - 108px);overflow-y:auto;padding-right:6px}
+.right-panel::-webkit-scrollbar{width:6px}
+.panel{margin-bottom:2px}
+@media(max-width:900px){html,body{height:auto;overflow:auto}body{display:block}.page{overflow:visible}.right-panel{position:static;max-height:none;overflow:visible;padding-right:0}}
+/* Final formatting pass: no clipped panels, no control overflow, wider settings rail. */
+html,body{height:auto!important;overflow-y:auto!important;overflow-x:hidden!important}
+body{display:block!important}
+.nav{position:sticky!important;top:0!important}
+.page{overflow:visible!important;width:min(1440px,100%)!important;padding-left:24px!important;padding-right:24px!important}
+.main-layout{grid-template-columns:minmax(0,1fr) minmax(350px,380px)!important;gap:28px!important;width:100%!important;max-width:1440px!important}
+.right-panel{position:sticky!important;top:96px!important;max-height:none!important;overflow:visible!important;padding-right:0!important;gap:22px!important}
+.panel{overflow:hidden!important;margin-bottom:0!important}
+.pb{min-width:0!important;overflow:hidden!important}
+.panel *{max-width:100%}
+.seg,.level-grid,.levels-grid{gap:10px!important}
+.so{width:100%!important;min-width:0!important;text-align:center!important}
+input[type=range]{width:100%!important}
+@media(max-width:1100px){.main-layout{grid-template-columns:1fr!important}.right-panel{position:static!important}.page{padding-left:16px!important;padding-right:16px!important}}
+/* Final shared tool layout pass: compact workspace, contained feature rail, small privacy strip. */
+.page{width:min(1200px,calc(100% - 32px))!important;max-width:none!important;margin:0 auto!important;padding-left:0!important;padding-right:0!important}
+.levels-wrap,.drop-zone{max-width:860px!important;margin-left:auto!important;margin-right:auto!important}
+.main-layout{grid-template-columns:minmax(0,820px) 360px!important;gap:20px!important;width:100%!important;max-width:1200px!important;margin:0 auto!important;align-items:start!important}
+.right-panel{width:360px!important;position:sticky!important;top:96px!important;max-height:calc(100vh - 124px)!important;overflow-y:auto!important;overflow-x:hidden!important;gap:18px!important;padding:0 8px 34px 0!important;scrollbar-width:thin!important}
+.right-panel::-webkit-scrollbar{width:6px!important}
+.right-panel::-webkit-scrollbar-thumb{background:var(--ink)!important;border:2px solid var(--paper)!important;border-radius:99px!important}
+.right-panel::after{content:''!important;display:block!important;height:6px!important;margin:4px 2px 0!important;background:var(--ink)!important;border-radius:99px!important}
+.right-panel .panel{flex:0 0 auto!important;overflow:hidden!important;margin-bottom:0!important}
+.right-panel .pb{overflow:visible!important}
+.priv{border:4px solid var(--ink)!important;box-shadow:5px 5px 0 var(--ink)!important;padding:13px 22px!important;min-height:58px!important;border-radius:18px!important}
+.priv span{font-size:16px!important;line-height:1.35!important}
+@media(max-width:980px){.main-layout{grid-template-columns:1fr!important}.right-panel{position:static!important;width:100%!important;max-height:none!important;overflow:visible!important;padding-right:0!important}.levels-wrap,.drop-zone{max-width:none!important}}
+/* Compress PDF alignment pass: compact left workflow + contained settings rail. */
+.page{
+  display:grid!important;
+  grid-template-columns:minmax(0,820px) 360px!important;
+  column-gap:20px!important;
+  row-gap:18px!important;
+  width:min(1200px,calc(100% - 32px))!important;
+  max-width:none!important;
+  margin:0 auto!important;
+  padding:22px 0 46px!important;
+  align-items:start!important;
+  overflow:visible!important;
+}
+.tool-header{grid-column:1 / -1!important;margin-bottom:0!important}
+.levels-wrap{
+  grid-column:1!important;
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+}
+.levels-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:12px!important}
+.lv{min-width:0!important;padding:18px 12px!important}
+.lv-name{font-size:17px!important}
+.lv-desc{font-size:11px!important}
+.drop-zone{
+  grid-column:1!important;
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:34px 24px!important;
+  min-height:0!important;
+}
+.dz-icon{width:64px!important;height:64px!important;margin-bottom:14px!important}
+.dz-title{font-size:27px!important}
+.main-layout{
+  display:contents!important;
+  width:auto!important;
+  max-width:none!important;
+  margin:0!important;
+}
+.compress-pdf-workflow{grid-column:1!important;min-width:0!important}
+.empty-card{
+  width:100%!important;
+  min-height:214px!important;
+  padding:34px 20px 24px!important;
+}
+.ec-icon{width:56px!important;height:56px!important;margin-bottom:10px!important}
+.ec-title{font-size:26px!important}
+.ec-sub{font-size:13px!important}
+.add-more-card{padding:10px 14px!important}
+.right-panel{
+  grid-column:2!important;
+  grid-row:2 / span 7!important;
+  width:360px!important;
+  margin-top:32px!important;
+  position:sticky!important;
+  top:96px!important;
+  max-height:calc(100vh - 124px)!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  padding:0 8px 18px 0!important;
+  gap:18px!important;
+  border-right:5px solid var(--ink)!important;
+  border-bottom:6px solid var(--ink)!important;
+  scrollbar-width:thin!important;
+}
+.right-panel::after{
+  content:''!important;
+  display:block!important;
+  height:6px!important;
+  margin:4px 2px 0!important;
+  background:var(--ink)!important;
+  border-radius:0!important;
+}
+.right-panel .panel{flex:0 0 auto!important;overflow:hidden!important;margin-bottom:0!important}
+.right-panel .pb{overflow:visible!important}
+.priv-old{display:none!important}
+.privacy-wide{
+  grid-column:1 / -1!important;
+  width:100%!important;
+  margin:0!important;
+  border:4px solid var(--ink)!important;
+  border-radius:0!important;
+  box-shadow:5px 5px 0 var(--ink)!important;
+  padding:13px 22px!important;
+  min-height:58px!important;
+}
+.privacy-wide span{font-size:16px!important;line-height:1.35!important}
+@media(max-width:980px){
+  .page{display:block!important;width:min(100%,calc(100% - 24px))!important;padding:18px 0 40px!important}
+  .levels-wrap,.drop-zone,.compress-pdf-workflow,.privacy-wide{margin-bottom:18px!important}
+  .levels-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .right-panel{position:static!important;width:100%!important;max-height:none!important;overflow:visible!important;padding-right:0!important;border-right:0!important}
+}
+</style>
+<link rel="stylesheet" href="/responsive.css"/>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="logo" href="/">
+      <div class="logo-bolt"><svg width="32" height="32" viewBox="0 0 64 64" fill="none" stroke="#ff8b4a" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><circle cx="21" cy="23" r="6"/><circle cx="21" cy="43" r="6"/><path d="M27 29 45 47"/><path d="M27 37 45 19"/><path d="M28 32 34 32"/></svg></div>
+      <span class="logo-text">PixCut</span>
+    </a>
+    <div class="nav-pills">
+      <span class="npill" style="background:var(--pu);color:#fff;">PDF Optimizer</span>
+      <span class="npill">4 Levels</span>
+      <span class="npill">Zero Uploads</span>
+    </div>
+    <div class="nav-r">
+      <button class="nbtn" onclick="location.href='/#tools'">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        All Tools
+      </button>
+      <button class="nbtn red">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402 0-3.791 3.068-5.191 5.281-5.191 1.312 0 4.151.501 5.719 4.457 1.59-3.968 4.464-4.447 5.726-4.447 2.54 0 5.274 1.621 5.274 5.181 0 4.069-5.136 8.625-11 14.402z"/></svg>
+        Support
+      </button>
+    </div>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="tool-header">
+    <div class="eyebrow">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      PDF Optimizer
+    </div>
+    <h1 class="tool-h1">Compress <em>PDF</em></h1>
+    <p class="tool-desc">Shrink PDF file sizes without ruining quality. Strip metadata, re-compress images, optimize streams. Batch compress multiple PDFs at once.</p>
+  </div>
+
+  <!-- LEVELS -->
+  <div class="levels-wrap">
+    <div class="lw-label">Choose Compression Level</div>
+    <div class="levels-grid" id="levels-grid">
+      <div class="lv" data-lv="screen">
+        <div class="lv-icon" style="background:var(--c);"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+        <div class="lv-name">Screen</div>
+        <div class="lv-desc">Smallest size for web &amp; email sharing</div>
+        <div class="lv-badge" style="background:var(--c);color:var(--ink);">~70% smaller</div>
+      </div>
+      <div class="lv on" data-lv="ebook">
+        <div class="lv-icon" style="background:var(--g);"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
+        <div class="lv-name">eBook</div>
+        <div class="lv-desc">Great quality, excellent compression</div>
+        <div class="lv-badge" style="background:var(--g);color:var(--ink);">~50% smaller</div>
+      </div>
+      <div class="lv" data-lv="printer">
+        <div class="lv-icon" style="background:var(--y);"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></div>
+        <div class="lv-name">Printer</div>
+        <div class="lv-desc">High quality, ready for printing</div>
+        <div class="lv-badge" style="background:var(--y);color:var(--ink);">~30% smaller</div>
+      </div>
+      <div class="lv" data-lv="lossless">
+        <div class="lv-icon" style="background:#f5edff;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--pu)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+        <div class="lv-name">Lossless</div>
+        <div class="lv-desc">Structure only — zero image quality loss</div>
+        <div class="lv-badge" style="background:#f5edff;color:var(--pu);">~10% smaller</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DROP ZONE -->
+  <div class="drop-zone" id="drop-zone">
+    <input type="file" id="file-input" accept="application/pdf,.pdf" multiple/>
+    <div class="dz-icon">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+    </div>
+    <div class="dz-title">Drop PDFs Here</div>
+    <div class="dz-or">or</div>
+    <div class="dz-cta">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Choose PDFs
+    </div>
+    <div class="dz-hint">Drop one or multiple PDFs · Batch compression supported</div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main-layout">
+    <div class="compress-pdf-workflow">
+      <!-- EMPTY -->
+      <div class="empty-card" id="empty-card">
+        <div class="ec-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+        <div class="ec-title">No PDFs Yet</div>
+        <div class="ec-sub">Drop PDFs above to start compressing</div>
+      </div>
+
+      <!-- FILE CARDS -->
+      <div class="file-cards" id="file-cards" style="display:none;"></div>
+
+      <!-- Add more -->
+      <div class="add-more-card" id="add-more-card" style="margin-top:12px;display:none;">
+        <input type="file" id="add-more-input" accept="application/pdf,.pdf" multiple/>
+        <div class="amc-inner">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add More PDFs
+        </div>
+      </div>
+
+      <div class="priv priv-old">
+        <span>🔒 100% private · All compression runs locally in your browser · Your PDFs never leave your device</span>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="right-panel">
+      <!-- Summary -->
+      <div class="panel">
+        <div class="ph"><span class="ph-title">Summary</span><span class="ph-chev"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+        <div class="pb">
+          <div class="info-box">
+            <div class="ir"><span class="il">Files</span><span class="iv pu" id="s-total">0</span></div>
+            <div class="ir"><span class="il">Compressed</span><span class="iv g" id="s-done">0</span></div>
+            <div class="ir"><span class="il">Before</span><span class="iv" id="s-before">—</span></div>
+            <div class="ir"><span class="il">After</span><span class="iv g" id="s-after">—</span></div>
+          </div>
+          <div class="savings-total">
+            <div class="st-val" id="st-saved">—</div>
+            <div class="st-lbl">TOTAL SPACE SAVED</div>
+          </div>
+        </div>
+      </div>
+      <!-- Advanced -->
+      <div class="panel">
+        <div class="ph"><span class="ph-title">Advanced</span><span class="ph-chev"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+        <div class="pb">
+          <div class="tog-row"><span class="tl">Strip metadata</span><button class="tog on" id="tog-meta">ON</button></div>
+          <div class="tog-row"><span class="tl">Remove annotations</span><button class="tog" id="tog-ann" disabled>OFF</button></div>
+          <div class="tog-row"><span class="tl">Re-compress images</span><button class="tog on" id="tog-recomp">ON</button></div>
+          <div class="tog-row"><span class="tl">Use object streams</span><button class="tog on" id="tog-obj">ON</button></div>
+          <div id="img-qual-row" class="sl-row">
+            <div class="sl-top"><span class="sl-lbl">Image quality</span><span class="sl-v" id="iq-v">72%</span></div>
+            <input type="range" id="sl-iq" min="20" max="95" value="72"/>
+          </div>
+        </div>
+      </div>
+      <!-- Actions -->
+      <div class="panel">
+        <div class="ph"><span class="ph-title">Actions</span><span class="ph-chev"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+        <div class="pb">
+          <button class="btn-compress" id="btn-compress" disabled>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Compress All PDFs
+          </button>
+          <button class="btn-ghost-full" id="btn-reset">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.56"/></svg>
+            Clear All
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="priv privacy-wide">
+      <span>🔒 100% private · All compression runs locally in your browser · Your PDFs never leave your device</span>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="/tools/compress-pdf/js/01-bootstrap.js"></script>
+<script src="/tools/compress-pdf/js/02-level-select.js"></script>
+<script src="/tools/compress-pdf/js/03-file-input.js"></script>
+<script src="/tools/compress-pdf/js/04-settings.js"></script>
+<script src="/tools/compress-pdf/js/05-compress.js"></script>
+</body>
+</html>

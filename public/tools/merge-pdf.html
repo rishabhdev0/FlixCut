@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
+<script>
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+window.scrollTo(0, 0);
+</script>
+<meta name="theme-color" content="#ffdf5b"/>
+<meta name="description" content="Free PDF merger — combine PDFs and images. Zero uploads."/>
+<title>Merge PDFs — PixCut</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#181818;--paper:#fbfaf2;--panel:#fffef9;--soft:#f3efe4;--muted:#817d73;--line:#d9d3c8;
+  --y:#ffdf5b;--r:#ff6670;--c:#50c7e8;--o:#ff8b4a;--g:#a7ff00;--pu:#9b5de5;
+  --shadow:8px 8px 0 var(--ink);--shadow-sm:5px 5px 0 var(--ink);--shadow-xs:3px 3px 0 var(--ink);
+  --fb:'DM Sans',system-ui,sans-serif;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--fb);background:var(--paper);color:var(--ink);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased;font-weight:800}
+button,input,select,textarea{font-family:inherit}
+button{cursor:pointer}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-thumb{background:var(--ink);border:2px solid var(--paper);border-radius:99px}
+input[type=range]{-webkit-appearance:none;width:100%;height:6px;background:#e7e0cf;border:2.5px solid var(--ink);border-radius:99px;outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;background:var(--y);border:3px solid var(--ink);border-radius:50%;cursor:pointer;box-shadow:var(--shadow-xs)}
+input[type=text],input[type=password],input[type=number]{background:#fff;color:var(--ink);border:2.5px solid var(--ink);border-radius:10px;padding:9px 11px;font-size:13px;font-weight:800;outline:none;width:100%;box-shadow:var(--shadow-xs)}
+input[type=text]:focus,input[type=password]:focus,input[type=number]:focus{background:#fffbe8}
+input[type=checkbox]{accent-color:var(--y);width:16px;height:16px;cursor:pointer}
+
+/* TOAST */
+.toast{position:fixed;left:50%;bottom:22px;z-index:9999;transform:translateX(-50%) translateY(110px);background:var(--ink);color:#fff;border:4px solid var(--y);border-radius:14px;padding:11px 18px;font-size:13px;font-weight:900;box-shadow:var(--shadow-sm);transition:.28s cubic-bezier(.2,1.4,.4,1);white-space:nowrap;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* NAV */
+.nav{background:var(--y);border-bottom:5px solid var(--ink);padding:0 22px;position:sticky;top:0;z-index:1000}
+.nav-inner{max-width:1200px;margin:0 auto;height:68px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink)}
+.logo-bolt{width:42px;height:42px;background:#fff;border:2.5px solid var(--ink);border-radius:10px;display:grid;place-items:center;box-shadow:var(--shadow-xs);flex-shrink:0}
+.logo-text{font-size:36px;font-weight:900;letter-spacing:-2px;line-height:1}
+.nav-pills{display:flex;align-items:center;gap:8px}
+.npill{border:3px solid var(--ink);border-radius:8px;background:#fff;color:var(--ink);box-shadow:var(--shadow-xs);font-size:11px;font-weight:900;letter-spacing:1.2px;text-transform:uppercase;padding:8px 12px;white-space:nowrap}
+.nav-r{display:flex;align-items:center;gap:8px}
+.nbtn{display:inline-flex;align-items:center;gap:7px;border:2.5px solid var(--ink);border-radius:10px;background:#fff;color:var(--ink);box-shadow:var(--shadow-sm);font-size:12px;font-weight:900;letter-spacing:.8px;text-transform:uppercase;padding:10px 15px;cursor:pointer;transition:.13s}
+.nbtn:hover{transform:translate(-2px,-2px);box-shadow:8px 8px 0 var(--ink)}
+.nbtn.red{background:var(--r);color:#fff}
+
+/* PAGE */
+.page{max-width:1200px;margin:0 auto;padding:28px 16px 52px}
+.tool-header{text-align:center;margin-bottom:24px}
+.eyebrow{display:inline-flex;align-items:center;gap:7px;background:var(--c);color:var(--ink);border:2.5px solid var(--ink);border-radius:7px;padding:7px 14px;font-size:12px;font-weight:900;letter-spacing:1.6px;text-transform:uppercase;box-shadow:var(--shadow-xs);margin-bottom:14px;transform:rotate(-1deg)}
+.tool-h1{font-size:clamp(48px,8vw,80px);font-weight:900;letter-spacing:-3px;line-height:.9;margin-bottom:10px}
+.tool-h1 em{color:#008caf;font-style:normal;text-decoration:underline;text-decoration-thickness:4px;text-underline-offset:4px}
+.tool-desc{font-size:15px;color:var(--muted);line-height:1.6;max-width:520px;margin:0 auto;font-weight:700}
+
+/* DROP ZONE */
+.drop-zone{position:relative;background:#fff;border:5px solid var(--ink);border-radius:24px;padding:42px 28px;text-align:center;cursor:pointer;box-shadow:var(--shadow);transition:.15s;margin-bottom:22px}
+.drop-zone:hover,.drop-zone.dov{transform:translate(-3px,-3px);box-shadow:12px 12px 0 var(--ink);background:#eefaff}
+.drop-zone.compact{padding:16px 28px}
+.drop-zone.compact .dz-full{display:none}
+.drop-zone.compact .dz-compact{display:flex}
+.dz-compact{display:none;align-items:center;justify-content:center;gap:12px}
+.dz-compact-icon{width:40px;height:40px;background:var(--c);border:2.5px solid var(--ink);border-radius:10px;display:grid;place-items:center;box-shadow:var(--shadow-xs);color:var(--ink);flex-shrink:0}
+.dz-compact-text{font-size:14px;font-weight:900;color:var(--muted)}
+.dz-compact-text span{color:#008caf}
+#file-input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.dz-icon{width:70px;height:70px;background:var(--soft);border:5px solid var(--ink);border-radius:14px;display:grid;place-items:center;box-shadow:var(--shadow-sm);margin:0 auto 18px;color:var(--ink);transition:.15s}
+.drop-zone:hover .dz-icon{background:var(--c);transform:translate(-2px,-2px);box-shadow:8px 8px 0 var(--ink)}
+.dz-title{font-size:28px;font-weight:900;letter-spacing:-.7px;margin-bottom:6px}
+.dz-or{font-size:13px;color:var(--muted);font-weight:700;margin-bottom:14px}
+.dz-cta{display:inline-flex;align-items:center;gap:7px;background:var(--ink);color:#fff;border:2.5px solid var(--ink);border-radius:10px;padding:11px 22px;font-size:14px;font-weight:900;box-shadow:var(--shadow-xs);pointer-events:none}
+.dz-hint{font-size:12px;color:var(--muted);font-weight:700;margin-top:12px;line-height:1.6}
+.dz-chips{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;flex-wrap:wrap}
+.chip{font-size:10px;font-weight:900;letter-spacing:.8px;padding:4px 9px;border-radius:5px;border:3px solid var(--ink);text-transform:uppercase;box-shadow:2px 2px 0 var(--ink)}
+
+/* MAIN LAYOUT */
+.main-layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:18px;align-items:start}
+
+/* FILE LIST CARD */
+.flc{background:var(--panel);border:5px solid var(--ink);border-radius:22px;box-shadow:var(--shadow);overflow:hidden}
+.flc-top{display:flex;align-items:center;justify-content:space-between;background:#fff;border-bottom:4px solid var(--ink);padding:14px 16px;gap:12px;flex-wrap:wrap}
+.flc-title{font-size:13px;font-weight:900;letter-spacing:1.6px;text-transform:uppercase}
+.flc-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.flc-badge{font-size:12px;font-weight:900;background:var(--c);color:var(--ink);border:3px solid var(--ink);border-radius:7px;padding:5px 10px;box-shadow:2px 2px 0 var(--ink)}
+.ic-btn{display:inline-flex;align-items:center;gap:5px;background:#fff;color:var(--ink);border:3px solid var(--ink);border-radius:8px;padding:7px 10px;font-size:11px;font-weight:900;letter-spacing:.4px;text-transform:uppercase;cursor:pointer;box-shadow:var(--shadow-xs)}
+.ic-btn:hover{background:var(--y);transform:translate(-1px,-1px);box-shadow:var(--shadow-sm)}
+.ic-btn.danger:hover{background:#fff0f1}
+.ic-btn:disabled{opacity:.35;cursor:not-allowed;transform:none;box-shadow:var(--shadow-xs)}
+
+/* HINT BAR */
+.hint-bar{display:flex;align-items:center;gap:8px;padding:9px 14px;background:var(--soft);border-bottom:4px solid var(--ink);font-size:11px;color:var(--muted);font-weight:800}
+.hint-sep{flex:1}
+.sec-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:900;color:var(--ink);background:var(--g);border:3px solid var(--ink);border-radius:6px;padding:3px 8px;box-shadow:2px 2px 0 var(--ink)}
+
+/* FILE LIST */
+.file-list{list-style:none;max-height:520px;overflow-y:auto;background:#fff}
+.file-item{display:flex;align-items:flex-start;gap:11px;padding:13px 14px;border-bottom:4px solid var(--soft);background:#fff;cursor:grab;transition:.1s;user-select:none;position:relative}
+.file-item:last-child{border-bottom:none}
+.file-item:hover{background:var(--soft)}
+.file-item.selected{background:#eefaff}
+.file-item.dragging{opacity:.3;cursor:grabbing}
+.file-item.drop-above{box-shadow:inset 0 4px 0 var(--c)}
+.file-item.drop-below{box-shadow:inset 0 -4px 0 var(--c)}
+.file-item.duplicate-warn{background:#fff9f0}
+
+.dh{color:var(--line);cursor:grab;display:flex;flex-shrink:0;padding:3px 1px;margin-top:2px}
+.dh:hover{color:var(--muted)}
+.ord{width:24px;height:24px;background:var(--y);border:3px solid var(--ink);border-radius:7px;display:grid;place-items:center;font-size:10px;font-weight:900;flex-shrink:0;margin-top:3px;box-shadow:var(--shadow-xs)}
+
+.fi-thumb{width:46px;height:58px;background:var(--soft);border:2.5px solid var(--ink);border-radius:8px;display:grid;place-items:center;flex-shrink:0;overflow:hidden;box-shadow:3px 3px 0 var(--ink)}
+.fi-thumb img,.fi-thumb canvas{width:100%;height:100%;object-fit:cover;display:block}
+.fi-thumb .no-preview{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;width:100%;height:100%}
+.fi-type{font-size:8px;font-weight:900;padding:2px 5px;border-radius:3px;border:2px solid var(--ink);text-transform:uppercase;letter-spacing:.4px}
+
+.fi-info{flex:1;min-width:0}
+.fi-name{font-size:13px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px}
+.fi-meta{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);flex-wrap:wrap;margin-bottom:6px;font-weight:800}
+.fi-dot{width:3px;height:3px;background:var(--line);border-radius:50%;flex-shrink:0}
+
+.pg-range{display:flex;align-items:center;gap:5px;margin-top:4px;flex-wrap:wrap}
+.pg-range-lbl{font-size:9px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+.pg-range input{width:44px;padding:4px 5px;font-size:11px;text-align:center;border-radius:7px;box-shadow:2px 2px 0 var(--ink)}
+.pg-range-sep{font-size:11px;color:var(--muted);font-weight:900}
+.pg-range-total{font-size:9px;color:var(--muted);font-weight:900}
+
+.fi-rot{display:flex;align-items:center;gap:4px;margin-top:4px;flex-wrap:wrap}
+.rot-lbl{font-size:9px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.rot-btn{background:#fff;border:3px solid var(--line);border-radius:7px;color:var(--muted);padding:3px 8px;font-size:10px;font-weight:900;cursor:pointer;box-shadow:2px 2px 0 var(--ink);transition:.1s}
+.rot-btn:hover{border-color:var(--ink);color:var(--ink)}
+.rot-btn.on{background:var(--y);border-color:var(--ink);color:var(--ink)}
+
+.dup-badge{font-size:9px;font-weight:900;color:var(--ink);background:var(--o);border:2px solid var(--ink);border-radius:4px;padding:1px 6px;box-shadow:2px 2px 0 var(--ink)}
+
+.fi-btns{display:flex;align-items:center;gap:4px;flex-shrink:0;margin-top:2px}
+.fb{width:30px;height:30px;border-radius:8px;border:3px solid var(--line);background:#fff;color:var(--muted);display:grid;place-items:center;cursor:pointer;box-shadow:2px 2px 0 var(--ink);transition:.1s}
+.fb:hover{border-color:var(--ink);background:var(--soft);color:var(--ink)}
+.fb.arr:hover{background:var(--y);border-color:var(--ink)}
+.fb.del:hover{background:#fff0f1;border-color:var(--r);color:var(--r)}
+
+/* ADD MORE */
+.add-more-row{padding:12px 14px;border-top:4px solid var(--ink);background:var(--soft)}
+.add-more-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:11px;background:#fff;color:var(--muted);border:4px dashed var(--line);border-radius:12px;font-size:13px;font-weight:900;cursor:pointer;position:relative;transition:.12s}
+.add-more-btn:hover{border-color:var(--ink);color:var(--ink);background:var(--soft)}
+#add-more-input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+
+/* EMPTY */
+.empty-state{padding:52px 20px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px}
+.es-icon{width:64px;height:64px;background:var(--soft);border:2.5px solid var(--ink);border-radius:12px;display:grid;place-items:center;color:var(--muted);box-shadow:var(--shadow-sm)}
+.es-title{font-size:26px;font-weight:900;letter-spacing:-.5px}
+.es-sub{font-size:13px;color:var(--muted);font-weight:700;line-height:1.5;text-align:center}
+
+/* PROGRESS */
+.prog-card{background:#fff;border:5px solid var(--ink);border-radius:22px;box-shadow:var(--shadow);display:none;padding:26px 20px;text-align:center;margin-top:18px}
+.prog-card.show{display:block}
+.prog-spin{width:48px;height:48px;margin:0 auto 16px;border:4px solid var(--soft);border-top-color:var(--ink);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.prog-title{font-size:24px;font-weight:900;letter-spacing:-.5px;margin-bottom:5px}
+.prog-msg{font-size:13px;color:var(--muted);font-weight:800;margin-bottom:3px}
+.prog-file{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:300px;margin:0 auto;font-weight:800}
+.prog-bar-wrap{width:100%;height:10px;background:var(--soft);border:3px solid var(--ink);border-radius:99px;margin-top:16px;overflow:hidden}
+.prog-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--c),var(--g));transition:width .4s ease}
+.prog-pct{font-size:12px;color:var(--muted);font-weight:900;margin-top:8px}
+
+/* RIGHT PANEL */
+.right-panel{display:flex;flex-direction:column;gap:14px;position:sticky;top:84px;max-height:calc(100vh - 100px);overflow-y:auto;padding-right:3px}
+.panel{background:#fff;border:2.5px solid var(--ink);border-radius:18px;overflow:hidden;box-shadow:var(--shadow-sm)}
+.ph{display:flex;align-items:center;justify-content:space-between;background:var(--soft);border-bottom:4px solid var(--ink);padding:12px 14px;cursor:pointer;user-select:none}
+.ph-title{font-size:12px;font-weight:900;letter-spacing:1.6px;text-transform:uppercase}
+.ph-chev{color:var(--ink);transition:.2s;display:flex;align-items:center}
+.panel.coll .ph-chev{transform:rotate(-90deg)}
+.panel.coll .pb{display:none}
+.pb{padding:14px;display:flex;flex-direction:column;gap:11px}
+
+.lbl{font-size:11px;font-weight:900;letter-spacing:1.1px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.seg{display:grid;grid-template-columns:repeat(auto-fit,minmax(52px,1fr));gap:5px}
+.so{padding:8px 5px;font-size:12px;font-weight:900;text-align:center;border-radius:8px;cursor:pointer;color:var(--ink);background:var(--soft);border:3px solid var(--line);box-shadow:var(--shadow-xs);transition:.1s}
+.so.on{background:var(--y);border-color:var(--ink)}
+.so:hover{border-color:var(--ink);background:#fff}
+
+.tog-row{display:flex;align-items:center;justify-content:space-between;background:var(--soft);border:3px solid var(--line);border-radius:10px;padding:10px 12px}
+.tl{font-size:12px;font-weight:900;color:var(--muted)}
+.tog{font-size:10px;font-weight:900;padding:5px 11px;background:#fff;color:var(--muted);border:3px solid var(--line);border-radius:7px;cursor:pointer;transition:.15s;letter-spacing:1px;text-transform:uppercase;box-shadow:var(--shadow-xs)}
+.tog.on{background:var(--y);color:var(--ink);border-color:var(--ink)}
+
+.info-box{background:var(--soft);border:3px solid var(--line);border-radius:10px;padding:12px}
+.ir{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.ir:last-child{margin-bottom:0}
+.il{font-size:12px;color:var(--muted);font-weight:800}
+.iv{font-size:12px;font-weight:900}
+.iv.c{color:#008caf}.iv.g{color:#3d8a00}
+
+.sl-row{margin-bottom:7px}
+.sl-row:last-child{margin-bottom:0}
+.sl-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.sl-lbl{font-size:12px;font-weight:800;color:var(--muted)}
+.sl-v{font-size:11px;font-weight:900;background:var(--y);color:var(--ink);border:3px solid var(--ink);padding:2px 7px;border-radius:6px;min-width:42px;text-align:center;box-shadow:var(--shadow-xs)}
+
+/* Security */
+.lock-icon{width:40px;height:40px;background:#f5edff;border:2.5px solid var(--ink);border-radius:10px;display:grid;place-items:center;margin-bottom:8px;color:var(--pu);box-shadow:var(--shadow-xs)}
+.pass-strength{height:8px;background:var(--soft);border:2px solid var(--ink);border-radius:99px;margin-top:7px;overflow:hidden}
+.pass-strength-bar{height:100%;border-radius:99px;transition:width .3s,background .3s}
+
+.perm-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.perm-item{display:flex;align-items:center;gap:6px;background:var(--soft);border:3px solid var(--line);border-radius:8px;padding:8px 10px;cursor:pointer;box-shadow:var(--shadow-xs)}
+.perm-item label{font-size:11px;color:var(--muted);cursor:pointer;flex:1;font-weight:800}
+
+.wm-preview{background:var(--soft);border:3px solid var(--line);border-radius:10px;padding:16px;text-align:center;margin-bottom:8px;position:relative;overflow:hidden;min-height:54px;display:grid;place-items:center}
+.wm-preview-text{font-size:16px;font-weight:900;opacity:.3;letter-spacing:2px;transform:rotate(-20deg);display:inline-block;color:var(--ink)}
+
+/* Buttons */
+.btn-merge{width:100%;display:flex;align-items:center;justify-content:center;gap:9px;background:var(--g);color:var(--ink);border:2.5px solid var(--ink);border-radius:12px;padding:15px;font-size:16px;font-weight:900;box-shadow:var(--shadow-sm);transition:.14s;cursor:pointer}
+.btn-merge:hover:not(:disabled){transform:translate(-2px,-2px);box-shadow:8px 8px 0 var(--ink)}
+.btn-merge:disabled{opacity:.35;cursor:not-allowed;transform:none}
+.btn-ghost-full{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;background:#fff;color:var(--muted);border:3px solid var(--line);border-radius:10px;padding:11px;font-size:13px;font-weight:900;cursor:pointer;transition:.12s;box-shadow:var(--shadow-xs)}
+.btn-ghost-full:hover{border-color:var(--ink);color:var(--ink);background:var(--soft)}
+
+/* Shortcuts modal */
+.modal-bg{position:fixed;inset:0;background:rgba(24,24,24,.5);backdrop-filter:blur(6px);z-index:2000;display:none;align-items:center;justify-content:center}
+.modal-bg.show{display:flex}
+.modal{background:var(--panel);border:5px solid var(--ink);border-radius:22px;padding:24px;max-width:400px;width:90%;box-shadow:var(--shadow)}
+.modal-title{font-size:22px;font-weight:900;letter-spacing:-.5px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+.modal-close{background:var(--soft);border:3px solid var(--ink);border-radius:8px;color:var(--ink);cursor:pointer;font-size:14px;font-weight:900;width:32px;height:32px;box-shadow:var(--shadow-xs)}
+.krow{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:3px solid var(--soft)}
+.krow:last-child{border-bottom:none}
+.kdesc{font-size:13px;color:var(--muted);font-weight:800}
+.kbd{background:var(--ink);border-radius:6px;padding:3px 8px;font-size:11px;font-weight:900;color:#fff;letter-spacing:.5px}
+
+/* Privacy */
+.priv{background:var(--c);border:5px solid var(--ink);border-radius:0;padding:18px 24px;margin-top:18px;box-shadow:var(--shadow)}
+.priv span{font-size:14px;font-weight:900;color:var(--ink);line-height:1.4}
+
+@media(max-width:900px){.nav-pills{display:none}.main-layout{grid-template-columns:1fr}.right-panel{position:static;max-height:none}}
+@media(max-width:640px){.logo-bolt{display:none}.page{padding:22px 12px 40px}.file-item{gap:8px;padding:11px 10px}.fi-btns{flex-direction:column}.flc-controls{width:100%}.priv{margin-left:-12px;margin-right:-12px;border-left:0;border-right:0;box-shadow:none}}
+.layout-fix-anchor{position:relative}
+html,body{width:100%;min-height:100%;scroll-padding-top:92px}
+body{overflow-y:auto;scrollbar-gutter:stable}
+.page{width:min(1200px,100%);margin:0 auto}
+.main-layout{width:min(1200px,calc(100% - 36px));margin:0 auto;align-items:start}
+.right-panel{align-self:start}
+@media(max-height:760px){
+  .page{padding-top:20px}
+  .tool-header{margin-bottom:20px}
+  .drop-zone{padding-top:24px;padding-bottom:24px}
+  .right-panel{top:86px;max-height:calc(100vh - 96px)}
+}
+/* Stable app layout, like bg-remover: nav stays clean, page scroll is hidden, panels stay separated. */
+html,body{height:100%;overflow:hidden}
+body{display:flex;flex-direction:column}
+.nav{position:relative;top:auto;flex-shrink:0}
+.page{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;padding-bottom:72px}
+.page::-webkit-scrollbar{width:0;height:0;display:none}
+.right-panel{position:sticky;top:18px;max-height:calc(100vh - 108px);overflow-y:auto;padding-right:6px}
+.right-panel::-webkit-scrollbar{width:6px}
+.panel{margin-bottom:2px}
+@media(max-width:900px){html,body{height:auto;overflow:auto}body{display:block}.page{overflow:visible}.right-panel{position:static;max-height:none;overflow:visible;padding-right:0}}
+/* Final formatting pass: no clipped panels, no control overflow, wider settings rail. */
+html,body{height:auto!important;overflow-y:auto!important;overflow-x:hidden!important}
+body{display:block!important}
+.nav{position:sticky!important;top:0!important}
+.page{overflow:visible!important;width:min(1440px,100%)!important;padding-left:24px!important;padding-right:24px!important}
+.main-layout{grid-template-columns:minmax(0,1fr) minmax(350px,380px)!important;gap:28px!important;width:100%!important;max-width:1440px!important}
+.right-panel{position:sticky!important;top:96px!important;max-height:none!important;overflow:visible!important;padding-right:0!important;gap:22px!important}
+.panel{overflow:hidden!important;margin-bottom:0!important}
+.pb{min-width:0!important;overflow:hidden!important}
+.panel *{max-width:100%}
+.seg,.opt-grid,.grid-2{gap:10px!important}
+.so{width:100%!important;min-width:0!important;text-align:center!important}
+input[type=range]{width:100%!important}
+@media(max-width:1100px){.main-layout{grid-template-columns:1fr!important}.right-panel{position:static!important}.page{padding-left:16px!important;padding-right:16px!important}}
+/* Final shared tool layout pass: compact workspace, contained feature rail, small privacy strip. */
+.page{width:min(1200px,calc(100% - 32px))!important;max-width:none!important;margin:0 auto!important;padding-left:0!important;padding-right:0!important}
+.drop-zone{max-width:860px!important;margin-left:auto!important;margin-right:auto!important}
+.main-layout{grid-template-columns:minmax(0,820px) 360px!important;gap:20px!important;width:100%!important;max-width:1200px!important;margin:0 auto!important;align-items:start!important}
+.right-panel{width:360px!important;position:sticky!important;top:96px!important;max-height:calc(100vh - 124px)!important;overflow-y:auto!important;overflow-x:hidden!important;gap:18px!important;padding:0 8px 34px 0!important;scrollbar-width:thin!important}
+.right-panel::-webkit-scrollbar{width:6px!important}
+.right-panel::-webkit-scrollbar-thumb{background:var(--ink)!important;border:2px solid var(--paper)!important;border-radius:99px!important}
+.right-panel::after{content:''!important;display:block!important;height:6px!important;margin:4px 2px 0!important;background:var(--ink)!important;border-radius:99px!important}
+.right-panel .panel{flex:0 0 auto!important;overflow:hidden!important;margin-bottom:0!important}
+.right-panel .pb{overflow:visible!important}
+.priv{border:4px solid var(--ink)!important;box-shadow:5px 5px 0 var(--ink)!important;padding:13px 22px!important;min-height:58px!important;border-radius:18px!important}
+.priv span{font-size:16px!important;line-height:1.35!important}
+@media(max-width:980px){.main-layout{grid-template-columns:1fr!important}.right-panel{position:static!important;width:100%!important;max-height:none!important;overflow:visible!important;padding-right:0!important}.drop-zone{max-width:none!important}}
+/* Merge PDF alignment: drop zone and queue share left rail; features start from drop row. */
+.page{
+  display:grid!important;
+  grid-template-columns:minmax(0,820px) 360px!important;
+  column-gap:20px!important;
+  row-gap:18px!important;
+  width:min(1200px,calc(100% - 32px))!important;
+  max-width:none!important;
+  margin:0 auto!important;
+  padding-left:0!important;
+  padding-right:0!important;
+  align-items:start!important;
+}
+.tool-header{
+  grid-column:1 / -1!important;
+  margin-bottom:8px!important;
+}
+.drop-zone{
+  grid-column:1!important;
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+}
+.main-layout{
+  display:contents!important;
+  width:auto!important;
+  max-width:none!important;
+  margin:0!important;
+}
+.merge-workflow{
+  grid-column:1!important;
+  min-width:0!important;
+}
+.right-panel{
+  grid-column:2!important;
+  grid-row:2 / span 6!important;
+  width:360px!important;
+  position:sticky!important;
+  top:96px!important;
+  max-height:calc(100vh - 124px)!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  padding:0 8px 34px 0!important;
+  gap:18px!important;
+  scroll-padding-bottom:34px!important;
+}
+.right-panel .panel{
+  flex:0 0 auto!important;
+}
+.right-panel::after{
+  content:''!important;
+  display:block!important;
+  height:6px!important;
+  margin:4px 2px 0!important;
+  background:var(--ink)!important;
+  border-radius:99px!important;
+}
+.flc,.priv{
+  width:100%!important;
+}
+@media(max-width:980px){
+  .page{
+    display:block!important;
+    width:min(900px,calc(100% - 24px))!important;
+  }
+  .drop-zone,.merge-workflow,.right-panel{
+    width:100%!important;
+    max-width:none!important;
+    margin-left:0!important;
+    margin-right:0!important;
+  }
+  .right-panel{
+    position:static!important;
+    max-height:none!important;
+    overflow:visible!important;
+    padding-right:0!important;
+    margin-top:18px!important;
+  }
+}
+/* Merge PDF size tune: slightly smaller left workspace, same alignment. */
+.page{
+  grid-template-columns:minmax(0,760px) 360px!important;
+  width:min(1140px,calc(100% - 32px))!important;
+}
+.drop-zone{
+  padding-top:44px!important;
+  padding-bottom:44px!important;
+}
+.file-list .empty-state{
+  padding-top:48px!important;
+  padding-bottom:48px!important;
+}
+@media(max-width:980px){
+  .page{width:min(840px,calc(100% - 24px))!important}
+}
+/* Merge PDF height + full-width privacy tune. */
+.drop-zone{
+  padding-top:34px!important;
+  padding-bottom:34px!important;
+}
+.dz-icon{
+  width:58px!important;
+  height:58px!important;
+  margin-bottom:12px!important;
+}
+.dz-title{
+  font-size:28px!important;
+}
+.file-list .empty-state{
+  min-height:132px!important;
+  padding-top:22px!important;
+  padding-bottom:8px!important;
+}
+.file-list .empty-state .es-icon{
+  width:54px!important;
+  height:54px!important;
+  margin-bottom:10px!important;
+}
+.file-list .empty-state .es-title{
+  font-size:26px!important;
+}
+.file-list .empty-state .es-sub{
+  font-size:13px!important;
+}
+.add-more-row{
+  padding:10px 14px!important;
+}
+.add-more-btn{
+  padding:10px!important;
+}
+.priv-old{display:none!important}
+.privacy-wide{
+  grid-column:1 / -1!important;
+  width:100%!important;
+  margin:4px 0 0!important;
+  border:4px solid var(--ink)!important;
+  border-radius:0!important;
+  box-shadow:5px 5px 0 var(--ink)!important;
+  padding:13px 28px!important;
+  background:var(--c)!important;
+  min-height:58px!important;
+  display:flex!important;
+  align-items:center!important;
+}
+.privacy-wide span{
+  font-size:16px!important;
+  font-weight:900!important;
+  line-height:1.35!important;
+  color:var(--ink)!important;
+}
+.right-panel{
+  border-bottom:6px solid var(--ink)!important;
+  padding-bottom:18px!important;
+}
+.right-panel::after{
+  height:5px!important;
+  margin:12px 4px 0!important;
+  background:var(--ink)!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+}
+@media(max-width:980px){
+  .privacy-wide{margin-top:14px!important;border-radius:18px!important;padding:13px 18px!important}
+}
+</style>
+<link rel="stylesheet" href="/responsive.css"/>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+
+<!-- SHORTCUTS MODAL -->
+<div class="modal-bg" id="shortcuts-modal">
+  <div class="modal">
+    <div class="modal-title">Keyboard Shortcuts <button class="modal-close" id="close-modal">✕</button></div>
+    <div class="krow"><span class="kdesc">Add files</span><span class="kbd">A</span></div>
+    <div class="krow"><span class="kdesc">Merge &amp; Download</span><span class="kbd">Ctrl + M</span></div>
+    <div class="krow"><span class="kdesc">Clear all files</span><span class="kbd">Ctrl + X</span></div>
+    <div class="krow"><span class="kdesc">Sort A–Z</span><span class="kbd">Ctrl + S</span></div>
+    <div class="krow"><span class="kdesc">Move selected up</span><span class="kbd">↑</span></div>
+    <div class="krow"><span class="kdesc">Move selected down</span><span class="kbd">↓</span></div>
+    <div class="krow"><span class="kdesc">Delete selected</span><span class="kbd">Delete</span></div>
+    <div class="krow"><span class="kdesc">Show shortcuts</span><span class="kbd">?</span></div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="logo" href="/">
+      <div class="logo-bolt"><svg width="32" height="32" viewBox="0 0 64 64" fill="none" stroke="#ff8b4a" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><circle cx="21" cy="23" r="6"/><circle cx="21" cy="43" r="6"/><path d="M27 29 45 47"/><path d="M27 37 45 19"/><path d="M28 32 34 32"/></svg></div>
+      <span class="logo-text">PixCut</span>
+    </a>
+    <div class="nav-pills">
+      <span class="npill" style="background:var(--c);">Mix &amp; Merge</span>
+      <span class="npill" style="background:var(--g);">AES-256</span>
+      <span class="npill">Zero Uploads</span>
+    </div>
+    <div class="nav-r">
+      <button class="nbtn" onclick="location.href='/#tools'">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        All Tools
+      </button>
+      <button class="nbtn" id="shortcuts-btn" title="Keyboard shortcuts">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8"/></svg>
+        Shortcuts
+      </button>
+      <button class="nbtn red">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402 0-3.791 3.068-5.191 5.281-5.191 1.312 0 4.151.501 5.719 4.457 1.59-3.968 4.464-4.447 5.726-4.447 2.54 0 5.274 1.621 5.274 5.181 0 4.069-5.136 8.625-11 14.402z"/></svg>
+        Support
+      </button>
+    </div>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="tool-header">
+    <div class="eyebrow">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6H3v14h14v-5M15 3h6v6M10 14L21 3"/></svg>
+      Mix &amp; Merge
+    </div>
+    <h1 class="tool-h1">Merge <em>PDFs</em><br/>&amp; Images</h1>
+    <p class="tool-desc">Combine PDFs and images into one perfect document. Page ranges · password protection · watermarks · all runs locally.</p>
+  </div>
+
+  <!-- DROP ZONE -->
+  <div class="drop-zone" id="drop-zone">
+    <input type="file" id="file-input" accept=".pdf,image/*" multiple/>
+    <div class="dz-full">
+      <div class="dz-icon">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      </div>
+      <div class="dz-title">Drop Files Here</div>
+      <div class="dz-or">or</div>
+      <div class="dz-cta">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Choose Files
+      </div>
+      <div class="dz-hint">PDF · JPG · PNG · WebP — mix file types · drag to reorder after adding</div>
+      <div class="dz-chips">
+        <span class="chip" style="background:var(--r);color:#fff;">PDF</span>
+        <span class="chip" style="background:var(--c);">JPG</span>
+        <span class="chip" style="background:var(--c);">PNG</span>
+        <span class="chip" style="background:var(--c);">WebP</span>
+      </div>
+    </div>
+    <div class="dz-compact">
+      <div class="dz-compact-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+      <span class="dz-compact-text">Drop more files or <span>click to add</span></span>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main-layout">
+    <div class="merge-workflow">
+      <div class="flc">
+        <div class="flc-top">
+          <span class="flc-title">Files Queue</span>
+          <div class="flc-controls">
+            <span class="flc-badge" id="flc-badge">0 files</span>
+            <button class="ic-btn" id="sort-az">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+              A–Z
+            </button>
+            <button class="ic-btn" id="sort-size">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+              Size
+            </button>
+            <button class="ic-btn" id="sort-type">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              Type
+            </button>
+            <button class="ic-btn danger" id="clear-all">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+              Clear
+            </button>
+          </div>
+        </div>
+        <div class="hint-bar">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="5" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="19" r="1"/></svg>
+          Drag to reorder · Click to select · ↑↓ to move
+          <span class="hint-sep"></span>
+          <span class="sec-badge" id="sec-badge" style="display:none;">
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Password Protected
+          </span>
+        </div>
+        <ul class="file-list" id="file-list">
+          <li class="empty-state">
+            <div class="es-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+            <div class="es-title">No Files Yet</div>
+            <div class="es-sub">Drop PDFs and images above to get started</div>
+          </li>
+        </ul>
+        <div class="add-more-row">
+          <button class="add-more-btn">
+            <input type="file" id="add-more-input" accept=".pdf,image/*" multiple/>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add More Files
+          </button>
+        </div>
+      </div>
+
+      <!-- Progress -->
+      <div class="prog-card" id="prog-card">
+        <div class="prog-spin"></div>
+        <div class="prog-title">Merging Files</div>
+        <div class="prog-msg" id="prog-msg">Preparing...</div>
+        <div class="prog-file" id="prog-file"></div>
+        <div class="prog-bar-wrap"><div class="prog-bar" id="prog-bar"></div></div>
+        <div class="prog-pct" id="prog-pct">0%</div>
+      </div>
+
+      <div class="priv priv-old">
+        <span>🔒 AES-256 encryption · All processing local · Zero uploads · Memory cleared after download</span>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="right-panel">
+
+      <!-- Summary -->
+      <div class="panel">
+        <div class="ph"><span class="ph-title">Summary</span><span class="ph-chev"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+        <div class="pb">
+          <div class="info-box">
+            <div class="ir"><span class="il">Total files</span><span class="iv c" id="s-total">0</span></div>
+            <div class="ir"><span class="il">PDF files</span><span class="iv" id="s-pdfs">0</span></div>
+            <div class="ir"><span class="il">Image files</span><span class="iv" id="s-imgs">0</span></div>
+            <div class="ir"><span class="il">Total size</span><span class="iv" id="s-size">—</span></div>
+            <div class="ir"><span class="il">Est. pages</span><span class="iv g" id="s-pages">—</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Page Settings -->
+      <div class="panel">
+        <div class="ph"><span class="ph-title">Page Settings</span><span class="ph-chev"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+        <div class="pb">
+          <div><div class="lbl">Image page size</div><div class="seg" id="seg-size"><div class="so on" data-v="A4">A4</div><div class="so" data-v="Letter">Letter</div><div class="so" data-v="A3">A3</div><div class="so" data-v="fit">Fit</div></div></div>
+          <div><div class="lbl">Orientation</div><div class="seg" id="seg-orient"><div class="so on" data-v="portrait">Portrait</div><div class="so" data-v="landscape">Land.</div><div class="so" data-v="auto">Auto</div></div></div>
+          <div><div class="lbl">Margins</div><div class="seg" id="seg-margin"><div class="so on" data-v="0">None</div><div class="so" data-v="20">Small</div><div class="so" data-v="40">Normal</div></div></div>
+          <div class="tog-row"><span class="tl">Blank page between files</span><button class="tog" id="tog-blank">OFF</button></div>
+          <div class="tog-row"><span class="tl">Compress output</span><button class="tog on" id="tog-comp">ON</button></div>
+        </div>
+      </div>
+
+      <!-- Page Numbers -->
+      <div class="panel">
+        <div class="ph"><span class="ph-title">Page Numbers</span><span class="ph-chev"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+        <div class="pb">
+          <div class="tog-row"><span class="tl">Add page numbers</span><button class="tog" id="tog-pgnum">OFF</button></div>
+          <div id="pgnum-opts" style="display:none;">
+            <div class="lbl" style="margin-bottom:6px;">Position</div>
+            <div class="seg" id="seg-pgpos"><div class="so on" data-v="bottom-center">Bottom</div><div class="so" data-v="bottom-right">Bot-R</div><div class="so" data-v="top-center">Top</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Watermark -->
+      <div class="panel">
+        <div class="ph"><span class="ph-title">Watermark</span><span class="ph-chev"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+        <div class="pb">
+          <div class="tog-row"><span class="tl">Add watermark</span><button class="tog" id="tog-wm">OFF</button></div>
+          <div id="wm-opts" style="display:none;flex-direction:column;gap:9px;">
+            <div class="wm-preview"><span class="wm-preview-text" id="wm-preview-text">CONFIDENTIAL</span></div>
+            <input type="text" id="wm-text" value="CONFIDENTIAL" placeholder="Watermark text..."/>
+            <div class="sl-row"><div class="sl-top"><span class="sl-lbl">Opacity</span><span class="sl-v" id="wm-op-v">15%</span></div><input type="range" id="wm-op" min="5" max="60" value="15"/></div>
+            <div class="sl-row"><div class="sl-top"><span class="sl-lbl">Rotation</span><span class="sl-v" id="wm-rot-v">-30°</span></div><input type="range" id="wm-rot" min="-90" max="90" value="-30"/></div>
+            <div class="sl-row"><div class="sl-top"><span class="sl-lbl">Size</span><span class="sl-v" id="wm-sz-v">40px</span></div><input type="range" id="wm-sz" min="12" max="80" value="40"/></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div class="panel">
+        <div class="ph"><span class="ph-title">Security</span><span class="ph-chev"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+        <div class="pb">
+          <div class="tog-row"><span class="tl">Password protect PDF</span><button class="tog" id="tog-pass">OFF</button></div>
+          <div id="pass-opts" style="display:none;flex-direction:column;gap:9px;">
+            <div class="lock-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+            <div><div class="lbl">Open Password</div><input type="password" id="user-pass" placeholder="Password to open PDF..."/>
+            <div class="pass-strength"><div class="pass-strength-bar" id="pass-bar"></div></div></div>
+            <div><div class="lbl">Owner Password (optional)</div><input type="password" id="owner-pass" placeholder="Password to edit/print..."/></div>
+            <div><div class="lbl" style="margin-bottom:7px;">Permissions</div>
+            <div class="perm-grid">
+              <div class="perm-item"><input type="checkbox" id="p-print" checked/><label for="p-print">Allow print</label></div>
+              <div class="perm-item"><input type="checkbox" id="p-copy"/><label for="p-copy">Allow copy</label></div>
+              <div class="perm-item"><input type="checkbox" id="p-edit"/><label for="p-edit">Allow edit</label></div>
+              <div class="perm-item"><input type="checkbox" id="p-annot" checked/><label for="p-annot">Annotations</label></div>
+            </div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Metadata -->
+      <div class="panel">
+        <div class="ph"><span class="ph-title">Metadata</span><span class="ph-chev"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+        <div class="pb">
+          <div><div class="lbl">Output filename</div><input type="text" id="out-name" value="pixcut-merged" placeholder="filename..."/></div>
+          <div><div class="lbl">PDF Title</div><input type="text" id="meta-title" placeholder="Document title..."/></div>
+          <div><div class="lbl">Author</div><input type="text" id="meta-author" placeholder="Author name..."/></div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="panel">
+        <div class="ph"><span class="ph-title">Actions</span><span class="ph-chev"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+        <div class="pb">
+          <button class="btn-merge" id="btn-merge" disabled>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Merge &amp; Download
+          </button>
+          <button class="btn-ghost-full" id="btn-reset">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.56"/></svg>
+            Clear All &amp; Start Over
+          </button>
+          <div style="text-align:center;font-size:11px;color:var(--muted);font-weight:800;">Ctrl+M to merge · ? for shortcuts</div>
+        </div>
+      </div>
+
+    </div>
+    <div class="priv privacy-wide">
+      <span>🔒 AES-256 encryption · All processing local · Zero uploads · Memory cleared after download</span>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="/tools/merge-pdf/js/01-bootstrap.js"></script>
+<script src="/tools/merge-pdf/js/02-state.js"></script>
+<script src="/tools/merge-pdf/js/03-file-input.js"></script>
+<script src="/tools/merge-pdf/js/04-render-list.js"></script>
+<script src="/tools/merge-pdf/js/05-settings.js"></script>
+<script src="/tools/merge-pdf/js/06-keyboard-shortcuts.js"></script>
+<script src="/tools/merge-pdf/js/07-merge.js"></script>
+</body>
+</html>

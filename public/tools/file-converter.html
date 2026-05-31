@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
+<script>
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+window.scrollTo(0, 0);
+</script>
+<title>File Converter — PixCut</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800;900&display=swap" rel="stylesheet"/>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#181818;--paper:#fbfaf2;--panel:#fffef9;--soft:#f3efe4;--muted:#817d73;
+  --y:#ffdf5b;--r:#ff6670;--c:#50c7e8;--o:#ff8b4a;--g:#a7ff00;--pu:#9b5de5;
+  --shadow:8px 8px 0 var(--ink);--shadow-sm:5px 5px 0 var(--ink);
+  --fb:'DM Sans',system-ui,sans-serif;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--fb);background:var(--paper);color:var(--ink);min-height:100vh;font-weight:800;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+button,input,select,textarea{font-family:inherit}
+button{cursor:pointer}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:var(--ink);border:2px solid var(--paper);border-radius:99px}
+input[type=range]{-webkit-appearance:none;width:100%;height:8px;background:#e7e0cf;border:3px solid var(--ink);border-radius:99px;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;background:var(--y);border:2.5px solid var(--ink);border-radius:50%}
+input[type=text],input[type=number]{background:#fff;color:var(--ink);border:2.5px solid var(--ink);border-radius:10px;padding:9px 11px;font-size:13px;font-weight:800;outline:none;width:100%;box-shadow:3px 3px 0 var(--ink)}
+input[type=text]:focus,input[type=number]:focus{background:#fff7d7}
+
+/* TOAST */
+.toast{position:fixed;left:50%;bottom:22px;z-index:9999;transform:translateX(-50%) translateY(110px);background:var(--ink);color:#fff;border:4px solid var(--y);border-radius:14px;padding:12px 18px;font-size:13px;font-weight:900;box-shadow:var(--shadow-sm);transition:.28s cubic-bezier(.2,1.4,.4,1);white-space:nowrap;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* NAV */
+.nav{position:sticky;top:0;z-index:1000;background:var(--y);border-bottom:5px solid var(--ink);padding:0 18px}
+.nav-inner{max-width:1200px;margin:0 auto;min-height:72px;display:flex;align-items:center;justify-content:space-between;gap:14px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink)}
+.logo-bolt{width:44px;height:44px;background:#fff;border:2.5px solid var(--ink);border-radius:10px;display:grid;place-items:center;box-shadow:var(--shadow-sm);flex-shrink:0}
+.logo-text{font-size:36px;font-weight:900;letter-spacing:-2px;line-height:.8;color:var(--ink)}
+.nav-pills{display:flex;align-items:center;gap:10px}
+.pill{border:2.5px solid var(--ink);border-radius:10px;background:#fff;color:var(--ink);box-shadow:var(--shadow-sm);font-size:12px;font-weight:900;letter-spacing:1.4px;text-transform:uppercase;padding:10px 14px;white-space:nowrap}
+.pill-o{background:var(--o)}
+.nav-r{display:flex;align-items:center;gap:10px}
+.nbtn{display:inline-flex;align-items:center;gap:8px;padding:11px 15px;border:2.5px solid var(--ink);border-radius:10px;background:#fff;color:var(--ink);box-shadow:var(--shadow-sm);font-size:12px;font-weight:900;letter-spacing:1.4px;text-transform:uppercase;cursor:pointer}
+.nbtn:hover{transform:translate(-2px,-2px);box-shadow:8px 8px 0 var(--ink)}
+.nbtn.red{background:var(--r);color:#fff}
+
+/* PAGE */
+.page{max-width:1200px;margin:0 auto;padding:34px 18px 56px}
+.tool-header{text-align:center;margin-bottom:28px}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--o);color:var(--ink);border:2.5px solid var(--ink);box-shadow:var(--shadow-sm);transform:rotate(-1deg);border-radius:5px;padding:8px 16px;margin-bottom:18px;font-size:13px;font-weight:900;letter-spacing:1.6px;text-transform:uppercase}
+.tool-h1{font-size:clamp(48px,7vw,76px);letter-spacing:-2.2px;line-height:.9;margin-bottom:13px;font-weight:900}
+.tool-h1 em{color:#d96a00;font-style:normal}
+.tool-desc{font-size:17px;color:var(--muted);line-height:1.55;max-width:620px;margin:0 auto;font-weight:800}
+
+/* MODE TABS */
+.mode-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:860px;margin:0 auto 24px}
+.mode-tab{background:#fff;border:5px solid var(--ink);border-radius:18px;box-shadow:var(--shadow-sm);padding:18px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;transition:.14s;text-align:center;position:relative}
+.mode-tab:hover,.mode-tab.on{transform:translate(-2px,-2px);box-shadow:8px 8px 0 var(--ink)}
+.mode-tab.on{background:#fff3e6}
+.mode-tab.on::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:5px;background:var(--o);border-radius:0 0 14px 14px}
+.mt-icon{width:44px;height:44px;border-radius:10px;border:2.5px solid var(--ink);display:grid;place-items:center;color:var(--ink);box-shadow:3px 3px 0 var(--ink)}
+.mt-title{font-size:17px;font-weight:900;letter-spacing:-.3px}
+.mt-sub{font-size:11px;color:var(--muted);font-weight:900}
+.mt-arrow{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:900}
+.mt-from{color:var(--muted)}
+.mt-to{color:#d96a00}
+
+/* DROP ZONE */
+.drop-zone{position:relative;background:var(--panel);border:5px solid var(--ink);border-radius:28px;padding:34px 28px;cursor:pointer;box-shadow:var(--shadow);transition:.16s;margin-bottom:22px}
+.drop-zone:hover,.drop-zone.dov{transform:translate(-3px,-3px);box-shadow:12px 12px 0 var(--ink);background:#fff3e6}
+#file-input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.dz-inner{display:flex;align-items:center;gap:22px;max-width:700px;margin:0 auto}
+.dz-icon{width:74px;height:74px;border:5px solid var(--ink);border-radius:14px;display:grid;place-items:center;box-shadow:var(--shadow-sm);flex-shrink:0;color:var(--ink)}
+.drop-zone:hover .dz-icon{transform:translate(-2px,-2px);box-shadow:8px 8px 0 var(--ink)}
+.dz-text{text-align:left}
+.dz-title{font-size:30px;font-weight:900;letter-spacing:-.7px;margin-bottom:8px}
+.dz-hint{font-size:14px;color:var(--muted);line-height:1.55;font-weight:900}
+.dz-cta{display:inline-flex;align-items:center;gap:8px;color:var(--ink);border:2.5px solid var(--ink);border-radius:12px;padding:11px 19px;font-size:14px;font-weight:900;box-shadow:var(--shadow-sm);margin-top:12px;pointer-events:none}
+.dz-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.chip{font-size:10px;font-weight:900;letter-spacing:.8px;padding:4px 9px;border-radius:5px;border:3px solid var(--ink);text-transform:uppercase;box-shadow:2px 2px 0 var(--ink)}
+
+/* STATS BAR */
+.stats-bar{display:grid;grid-template-columns:repeat(5,1fr);background:var(--panel);border:5px solid var(--ink);border-radius:18px;overflow:hidden;margin-bottom:18px;box-shadow:var(--shadow-sm)}
+.stat-item{padding:13px 12px;border-right:4px solid var(--ink);text-align:center;background:#fff}
+.stat-item:last-child{border-right:none}
+.stat-val{font-size:24px;font-weight:900;line-height:1;margin-bottom:4px}
+.stat-lbl{font-size:10px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+
+/* MAIN LAYOUT */
+.main-layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:18px;align-items:start}
+
+/* FILE LIST CARD */
+.flc{background:var(--panel);border:5px solid var(--ink);border-radius:22px;box-shadow:var(--shadow);overflow:hidden}
+.flc-top{display:flex;align-items:center;justify-content:space-between;background:#fff;border-bottom:4px solid var(--ink);padding:15px 16px;gap:12px;flex-wrap:wrap}
+.flc-title{font-size:14px;font-weight:900;letter-spacing:1.6px;text-transform:uppercase}
+.flc-ctrls{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.flc-badge{font-size:12px;font-weight:900;background:var(--o);color:var(--ink);border:3px solid var(--ink);border-radius:7px;padding:5px 10px;box-shadow:2px 2px 0 var(--ink)}
+.ic-btn{display:inline-flex;align-items:center;gap:6px;background:#fff;color:var(--ink);border:3px solid var(--ink);border-radius:8px;padding:7px 10px;font-size:11px;font-weight:900;text-transform:uppercase;cursor:pointer;box-shadow:3px 3px 0 var(--ink)}
+.ic-btn:hover{background:var(--y);transform:translate(-1px,-1px);box-shadow:5px 5px 0 var(--ink)}
+.ic-btn.danger:hover{background:#fff0f1}
+.ic-btn:disabled{opacity:.35;cursor:not-allowed}
+
+/* FILE ITEMS */
+.file-list{list-style:none;max-height:500px;overflow-y:auto;background:#fff}
+.file-item{display:grid;grid-template-columns:30px 44px 1fr auto;align-items:center;gap:12px;padding:13px 14px;border-bottom:4px solid var(--ink);background:#fff;cursor:grab;transition:.12s;user-select:none}
+.file-item:last-child{border-bottom:none}
+.file-item:hover{background:#fff3e6}
+.file-item.fi-done{background:#f4ffe5}
+.file-item.fi-error{background:#fff0f1}
+.file-item.fi-proc{background:#fff8ee}
+.file-item.fi-wait{background:#fff}
+.file-item.dragging{opacity:.35}
+.file-item.drop-above{box-shadow:inset 0 5px 0 var(--o)}
+.file-item.drop-below{box-shadow:inset 0 -5px 0 var(--o)}
+.drag-h{color:var(--muted);cursor:grab;display:grid;place-items:center}
+.fi-thumb{width:44px;height:44px;background:#fff;border:2.5px solid var(--ink);border-radius:9px;display:grid;place-items:center;overflow:hidden;box-shadow:3px 3px 0 var(--ink)}
+.fi-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.fi-type{font-size:9px;font-weight:900;padding:3px 6px;border-radius:3px;border:3px solid var(--ink);text-transform:uppercase;letter-spacing:.4px}
+.fi-info{min-width:0}
+.fi-name{font-size:13px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:5px}
+.fi-meta{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);flex-wrap:wrap;font-weight:900}
+.fi-dot{width:4px;height:4px;background:var(--muted);border-radius:50%;flex-shrink:0}
+.fi-savings{font-size:11px;font-weight:900;color:#3d8a00}
+.fi-right{display:flex;align-items:center;gap:6px}
+.fi-status{font-size:10px;font-weight:900;padding:4px 8px;border-radius:6px;white-space:nowrap;border:3px solid var(--ink);box-shadow:2px 2px 0 var(--ink)}
+.fi-status.done{background:var(--g);color:var(--ink)}
+.fi-status.error{background:var(--r);color:#fff}
+.fi-status.wait{background:#fff;color:var(--muted)}
+.fi-status.proc{background:var(--o);color:var(--ink)}
+/* Square icon buttons */
+.fi-btn{width:32px;height:32px;border-radius:8px;border:3px solid var(--ink);background:#fff;color:var(--ink);display:grid;place-items:center;cursor:pointer;box-shadow:3px 3px 0 var(--ink)}
+.fi-btn:hover{background:var(--y);transform:translate(-1px,-1px);box-shadow:5px 5px 0 var(--ink)}
+.fi-btn.dl:hover{background:var(--g)}
+.fi-btn.del:hover{background:#fff0f1}
+.fi-btn:disabled{opacity:.35;cursor:not-allowed;transform:none;box-shadow:3px 3px 0 var(--ink)}
+
+.add-more-row{padding:13px 14px;border-top:4px solid var(--ink);background:var(--soft)}
+.add-more-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:12px;background:#fff;color:var(--ink);border:4px dashed var(--ink);border-radius:12px;font-size:14px;font-weight:900;cursor:pointer;position:relative}
+.add-more-btn:hover{background:#fff3e6}
+#add-more-input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+
+/* EMPTY STATE */
+.empty-state{padding:52px 20px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px}
+.es-icon{width:66px;height:66px;background:var(--soft);border:2.5px solid var(--ink);border-radius:12px;display:grid;place-items:center;color:var(--muted);box-shadow:var(--shadow-sm)}
+.es-title{font-size:28px;font-weight:900;letter-spacing:-.5px}
+.es-sub{font-size:14px;color:var(--muted);font-weight:900;line-height:1.5}
+
+/* PROGRESS */
+.prog-wrap{background:var(--panel);border:5px solid var(--ink);border-radius:22px;box-shadow:var(--shadow);display:none;padding:26px 20px;text-align:center;margin-top:18px}
+.prog-wrap.show{display:block}
+.prog-spin{width:52px;height:52px;margin:0 auto 16px;border:5px solid #e7e0cf;border-top-color:var(--o);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.prog-title{font-size:28px;font-weight:900;letter-spacing:-.5px;margin-bottom:5px}
+.prog-msg{font-size:13px;color:var(--muted);font-weight:900}
+.prog-bar-wrap{width:100%;height:12px;background:#e7e0cf;border:2.5px solid var(--ink);border-radius:99px;margin-top:16px;overflow:hidden}
+.prog-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--o),var(--y));transition:width .3s ease}
+.prog-pct{font-size:12px;color:var(--muted);font-weight:900;margin-top:8px}
+
+/* RIGHT PANEL */
+.right-panel{display:flex;flex-direction:column;gap:16px;position:sticky;top:92px;max-height:calc(100vh - 108px);overflow-y:auto;padding-right:4px}
+.panel{background:var(--panel);border:5px solid var(--ink);border-radius:22px;box-shadow:var(--shadow);overflow:hidden}
+.ph{display:flex;align-items:center;justify-content:space-between;background:#fff;border-bottom:4px solid var(--ink);padding:15px 16px;cursor:pointer;user-select:none}
+.ph-title{font-size:14px;font-weight:900;letter-spacing:1.6px;text-transform:uppercase}
+.ph-chev{color:var(--ink);transition:.2s;display:flex}
+.panel.coll .ph-chev{transform:rotate(-90deg)}
+.panel.coll .pb{display:none}
+.pb{padding:16px;display:flex;flex-direction:column;gap:13px}
+.lbl{font-size:12px;font-weight:900;letter-spacing:1.1px;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+.seg{display:grid;grid-template-columns:repeat(auto-fit,minmax(52px,1fr));gap:6px}
+.so{padding:9px 6px;font-size:12px;font-weight:900;text-align:center;border-radius:8px;cursor:pointer;color:var(--ink);background:#fff;border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink)}
+.so.on{background:var(--y)}
+.so:hover{transform:translate(-1px,-1px);box-shadow:5px 5px 0 var(--ink)}
+.tog-row{background:#fff;border:2.5px solid var(--ink);border-radius:12px;padding:12px;box-shadow:4px 4px 0 var(--ink);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.tl{font-size:13px;font-weight:900;color:var(--muted)}
+.tog{font-size:11px;font-weight:900;padding:6px 12px;background:#e7e0cf;color:var(--ink);border:3px solid var(--ink);border-radius:7px;letter-spacing:1px;text-transform:uppercase;cursor:pointer}
+.tog.on{background:var(--y)}
+.sl-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.sl-lbl{font-size:13px;font-weight:900;color:var(--muted)}
+.sl-v{font-size:12px;font-weight:900;background:var(--y);color:var(--ink);border:3px solid var(--ink);padding:2px 8px;border-radius:6px;min-width:46px;text-align:center;box-shadow:2px 2px 0 var(--ink)}
+
+.filter-chips{display:flex;gap:7px;flex-wrap:wrap}
+.fc{font-size:12px;font-weight:900;padding:7px 10px;border-radius:8px;border:3px solid var(--ink);cursor:pointer;background:#fff;box-shadow:3px 3px 0 var(--ink)}
+.fc:hover,.fc.on{background:var(--o);transform:translate(-1px,-1px);box-shadow:5px 5px 0 var(--ink)}
+
+.wm-preview{background:#fff;border:2.5px solid var(--ink);border-radius:12px;padding:14px;text-align:center;overflow:hidden;min-height:66px;display:grid;place-items:center;box-shadow:4px 4px 0 var(--ink)}
+.wm-text{font-weight:900;font-size:18px;opacity:.35;letter-spacing:2px;transform:rotate(-25deg);display:inline-block}
+.rename-preview{background:#fff;border:2.5px solid var(--ink);border-radius:12px;padding:10px 11px;font-size:13px;color:#d96a00;font-weight:900;word-break:break-all;box-shadow:4px 4px 0 var(--ink)}
+
+/* BUTTONS */
+.btn-main,.btn-sec,.btn-ghost-full{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;border:2.5px solid var(--ink);border-radius:12px;box-shadow:var(--shadow-sm);font-weight:900;transition:.14s;cursor:pointer}
+.btn-main{background:var(--o);color:var(--ink);padding:15px;font-size:17px}
+.btn-sec{background:var(--g);color:var(--ink);padding:13px;font-size:15px}
+.btn-ghost-full{background:#fff;color:var(--ink);padding:12px;font-size:14px}
+.btn-main:hover:not(:disabled),.btn-sec:hover:not(:disabled),.btn-ghost-full:hover{transform:translate(-2px,-2px);box-shadow:8px 8px 0 var(--ink)}
+.btn-main:disabled,.btn-sec:disabled{opacity:.38;cursor:not-allowed}
+
+.priv{background:var(--c);border:5px solid var(--ink);padding:20px 26px;margin-top:18px;box-shadow:var(--shadow);border-radius:0}
+.priv span{font-size:16px;font-weight:900;color:var(--ink);line-height:1.4}
+
+/* PDF opts */
+.pdf-range-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:6px}
+.pdf-range-sep{font-size:13px;font-weight:900;color:var(--muted);text-align:center}
+
+@media(max-width:900px){.nav-pills{display:none}.main-layout{grid-template-columns:1fr}.right-panel{position:static;max-height:none}}
+@media(max-width:700px){.mode-tabs{grid-template-columns:1fr}.stats-bar{grid-template-columns:repeat(2,1fr)}.dz-inner{flex-direction:column;align-items:flex-start}}
+@media(max-width:640px){.logo-bolt{display:none}.logo-text{font-size:34px}.page{padding:24px 12px 40px}.file-item{grid-template-columns:28px 40px 1fr;gap:9px}.fi-right{grid-column:3;justify-content:flex-start;margin-top:6px}}
+.layout-fix-anchor{position:relative}
+html,body{width:100%;min-height:100%;scroll-padding-top:92px}
+body{overflow-y:auto;scrollbar-gutter:stable}
+.page{width:min(1200px,100%);margin:0 auto;padding-top:34px}
+.main-layout{width:min(1200px,calc(100% - 36px));margin:0 auto;align-items:start}
+.right-panel{align-self:start}
+@media(max-height:760px){
+  .page{padding-top:20px}
+  .tool-header{margin-bottom:20px}
+  .mode-tabs{margin-bottom:20px}
+  .drop-zone{padding-top:26px;padding-bottom:26px}
+  .mode-tab{padding-top:14px;padding-bottom:14px}
+  .right-panel{top:86px;max-height:calc(100vh - 96px)}
+}
+/* Stable app layout, like bg-remover: nav stays clean, page scroll is hidden, panels stay separated. */
+html,body{height:100%;overflow:hidden}
+body{display:flex;flex-direction:column}
+.nav{position:relative;top:auto;flex-shrink:0}
+.page{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;padding-bottom:72px}
+.page::-webkit-scrollbar{width:0;height:0;display:none}
+.right-panel{position:sticky;top:18px;max-height:calc(100vh - 108px);overflow-y:auto;padding-right:6px}
+.right-panel::-webkit-scrollbar{width:6px}
+.panel{margin-bottom:2px}
+@media(max-width:900px){html,body{height:auto;overflow:auto}body{display:block}.page{overflow:visible}.right-panel{position:static;max-height:none;overflow:visible;padding-right:0}}
+/* Final formatting pass: no clipped panels, no control overflow, wider settings rail. */
+html,body{height:auto!important;overflow-y:auto!important;overflow-x:hidden!important}
+body{display:block!important}
+.nav{position:sticky!important;top:0!important}
+.page{overflow:visible!important;width:min(1440px,100%)!important;padding-left:24px!important;padding-right:24px!important}
+.main-layout{grid-template-columns:minmax(0,1fr) minmax(350px,380px)!important;gap:28px!important;width:100%!important;max-width:1440px!important}
+.right-panel{position:sticky!important;top:96px!important;max-height:none!important;overflow:visible!important;padding-right:0!important;gap:22px!important}
+.panel{overflow:hidden!important;margin-bottom:0!important}
+.pb{min-width:0!important;overflow:hidden!important}
+.panel *{max-width:100%}
+.filter-chips{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:10px!important}
+.fc,.so{width:100%!important;min-width:0!important;text-align:center!important}
+input[type=range]{width:100%!important}
+@media(max-width:1100px){.main-layout{grid-template-columns:1fr!important}.right-panel{position:static!important}.page{padding-left:16px!important;padding-right:16px!important}}
+/* File Converter alignment: upload, stats, queue, and settings share one centered grid. */
+.page{max-width:1200px!important;margin:0 auto!important;padding-left:18px!important;padding-right:18px!important}
+.drop-zone,.stats-bar,.main-layout{width:100%!important;max-width:1088px!important;margin-left:auto!important;margin-right:auto!important}
+.main-layout{grid-template-columns:minmax(0,1fr) 360px!important;gap:28px!important;align-items:start!important}
+.right-panel{width:360px!important}
+.flc,.priv{width:100%!important}
+.flc-top{min-height:84px!important}
+@media(max-width:1180px){
+  .drop-zone,.stats-bar,.main-layout{max-width:100%!important}
+  .main-layout{grid-template-columns:minmax(0,1fr) 340px!important;gap:22px!important}
+  .right-panel{width:340px!important}
+}
+@media(max-width:900px){
+  .main-layout{grid-template-columns:1fr!important}
+  .right-panel{width:100%!important}
+}
+/* Correct structure: left column owns drop/stats/queue; right column starts beside drop-zone. */
+.page{
+  display:grid!important;
+  grid-template-columns:minmax(0,860px) 360px!important;
+  column-gap:28px!important;
+  row-gap:18px!important;
+  max-width:1260px!important;
+  align-items:start!important;
+}
+.tool-header,.mode-tabs{grid-column:1 / -1!important}
+.drop-zone{grid-column:1!important;max-width:none!important;margin:0!important;width:100%!important}
+.stats-bar{grid-column:1!important;max-width:none!important;margin:0!important;width:100%!important}
+.main-layout{display:contents!important}
+.file-workflow{grid-column:1!important;min-width:0!important}
+.right-panel{grid-column:2!important;grid-row:3 / span 4!important;width:360px!important;align-self:start!important}
+.priv{margin-top:18px!important}
+@media(max-width:1100px){
+  .page{display:block!important;max-width:920px!important}
+  .drop-zone,.stats-bar,.main-layout{max-width:860px!important;margin-left:auto!important;margin-right:auto!important}
+  .right-panel{width:100%!important}
+}
+/* Target layout: wide left workspace, settings rail starts beside mode cards. */
+.page{
+  display:grid!important;
+  grid-template-columns:minmax(0,1168px) 348px!important;
+  column-gap:22px!important;
+  row-gap:18px!important;
+  width:min(1548px,calc(100% - 48px))!important;
+  max-width:none!important;
+  margin:0 auto!important;
+  padding:28px 0 56px!important;
+  align-items:start!important;
+}
+.tool-header{
+  grid-column:1 / -1!important;
+  margin-bottom:12px!important;
+}
+.mode-tabs{
+  grid-column:1!important;
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+}
+.drop-zone{
+  grid-column:1!important;
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+}
+.stats-bar{
+  grid-column:1!important;
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+}
+.main-layout{
+  display:contents!important;
+  width:auto!important;
+  max-width:none!important;
+  margin:0!important;
+}
+.file-workflow{
+  grid-column:1!important;
+  min-width:0!important;
+}
+.right-panel{
+  grid-column:2!important;
+  grid-row:2 / span 6!important;
+  width:348px!important;
+  position:sticky!important;
+  top:104px!important;
+  align-self:start!important;
+  gap:16px!important;
+  overflow:visible!important;
+}
+.right-panel .panel{
+  width:100%!important;
+}
+.flc,.priv{
+  width:100%!important;
+}
+.empty-state{
+  min-height:292px!important;
+}
+@media(max-width:1280px){
+  .page{
+    grid-template-columns:minmax(0,1fr) 340px!important;
+    width:calc(100% - 32px)!important;
+    column-gap:18px!important;
+  }
+  .right-panel{width:340px!important}
+}
+@media(max-width:980px){
+  .page{
+    display:block!important;
+    width:min(920px,calc(100% - 24px))!important;
+    padding-top:24px!important;
+  }
+  .mode-tabs,.drop-zone,.stats-bar,.file-workflow,.right-panel{
+    width:100%!important;
+    max-width:none!important;
+    margin-left:0!important;
+    margin-right:0!important;
+  }
+  .right-panel{
+    position:static!important;
+    margin-top:18px!important;
+  }
+}
+/* Final sizing pass: compact workspace + bg-remover-style scrollable feature rail. */
+.page{
+  grid-template-columns:minmax(0,860px) 320px!important;
+  column-gap:20px!important;
+  row-gap:16px!important;
+  width:min(1200px,calc(100% - 32px))!important;
+  padding-top:24px!important;
+}
+.tool-header{margin-bottom:8px!important}
+.mode-tabs{gap:10px!important}
+.mode-tab{padding:16px 12px!important}
+.drop-zone{padding:30px 28px!important}
+.stats-bar{margin-top:0!important}
+.empty-state{min-height:252px!important}
+.right-panel{
+  width:320px!important;
+  grid-row:2 / span 6!important;
+  position:sticky!important;
+  top:96px!important;
+  max-height:calc(100vh - 112px)!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  padding-right:4px!important;
+  gap:12px!important;
+  scrollbar-width:thin!important;
+}
+.right-panel::-webkit-scrollbar{width:6px!important}
+.right-panel::-webkit-scrollbar-thumb{background:var(--ink)!important;border:2px solid var(--paper)!important;border-radius:99px!important}
+.right-panel .panel{box-shadow:5px 5px 0 var(--ink)!important}
+.right-panel .pb{padding:14px!important}
+.filter-chips{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important}
+.fc{padding:7px 6px!important;font-size:11px!important}
+.so{padding:9px 6px!important;font-size:12px!important}
+@media(max-width:1220px){
+  .page{grid-template-columns:minmax(0,1fr) 310px!important;width:calc(100% - 24px)!important;column-gap:16px!important}
+  .right-panel{width:310px!important}
+}
+@media(max-width:980px){
+  .page{display:block!important;width:min(900px,calc(100% - 24px))!important}
+  .right-panel{position:static!important;width:100%!important;max-height:none!important;overflow:visible!important;padding-right:0!important}
+}
+/* Right rail polish: prevent expanded panels from crushing into each other. */
+.page{
+  grid-template-columns:minmax(0,820px) 360px!important;
+  width:min(1210px,calc(100% - 32px))!important;
+}
+.right-panel{
+  width:360px!important;
+  max-height:calc(100vh - 124px)!important;
+  gap:18px!important;
+  padding:0 8px 34px 0!important;
+  scroll-padding-bottom:34px!important;
+}
+.right-panel .panel{
+  flex:0 0 auto!important;
+  overflow:hidden!important;
+  margin-bottom:0!important;
+}
+.right-panel .pb{
+  overflow:visible!important;
+}
+.filter-chips{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:10px!important;
+}
+.fc{
+  min-height:40px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+.sl-top{
+  gap:12px!important;
+}
+@media(max-width:1220px){
+  .page{grid-template-columns:minmax(0,1fr) 350px!important}
+  .right-panel{width:350px!important}
+}
+.priv-old{display:none!important}
+.privacy-wide{
+  grid-column:1 / -1!important;
+  width:100%!important;
+  margin:4px 0 0!important;
+  border:4px solid var(--ink)!important;
+  border-radius:0!important;
+  box-shadow:5px 5px 0 var(--ink)!important;
+  padding:13px 28px!important;
+  background:var(--c)!important;
+  min-height:58px!important;
+  display:flex!important;
+  align-items:center!important;
+}
+.privacy-wide span{
+  font-size:16px!important;
+  font-weight:900!important;
+  line-height:1.35!important;
+  color:var(--ink)!important;
+}
+.right-panel::after{
+  content:''!important;
+  display:block!important;
+  height:5px!important;
+  margin:12px 4px 0!important;
+  background:var(--ink)!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+}
+.right-panel{
+  border-bottom:6px solid var(--ink)!important;
+  padding-bottom:18px!important;
+}
+@media(max-width:980px){
+  .privacy-wide{margin-top:14px!important;border-radius:18px!important;padding:13px 18px!important}
+}
+</style>
+<link rel="stylesheet" href="/responsive.css"/>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="logo" href="/">
+      <div class="logo-bolt">
+        <svg width="32" height="32" viewBox="0 0 64 64" fill="none" stroke="#ff8b4a" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><circle cx="21" cy="23" r="6"/><circle cx="21" cy="43" r="6"/><path d="M27 29 45 47"/><path d="M27 37 45 19"/><path d="M28 32 34 32"/></svg>
+      </div>
+      <span class="logo-text">PixCut</span>
+    </a>
+    <div class="nav-pills">
+      <span class="pill pill-o">Multi-Format</span>
+      <span class="pill" style="background:var(--g)">Batch Convert</span>
+      <span class="pill">Zero Uploads</span>
+    </div>
+    <div class="nav-r">
+      <button class="nbtn" onclick="location.href='/#tools'">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        All Tools
+      </button>
+      <button class="nbtn red">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402 0-3.791 3.068-5.191 5.281-5.191 1.312 0 4.151.501 5.719 4.457 1.59-3.968 4.464-4.447 5.726-4.447 2.54 0 5.274 1.621 5.274 5.181 0 4.069-5.136 8.625-11 14.402z"/></svg>
+        Support
+      </button>
+    </div>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="tool-header">
+    <div class="eyebrow">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+      Multi-Format Converter
+    </div>
+    <h1 class="tool-h1">File <em>Converter</em></h1>
+    <p class="tool-desc">Convert images between any format, images to PDF, PDF to images. Filters, watermarks, resize, batch rename, ZIP download — 100% in your browser.</p>
+  </div>
+
+  <!-- MODE TABS -->
+  <div class="mode-tabs" id="mode-tabs">
+    <div class="mode-tab on" data-mode="img-to-img">
+      <div class="mt-icon" style="background:var(--c);">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      </div>
+      <div class="mt-title">Image → Image</div>
+      <div class="mt-arrow"><span class="mt-from">JPG/PNG</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg><span class="mt-to">WebP/AVIF</span></div>
+    </div>
+    <div class="mode-tab" data-mode="img-to-pdf">
+      <div class="mt-icon" style="background:var(--r);">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      </div>
+      <div class="mt-title">Image → PDF</div>
+      <div class="mt-arrow"><span class="mt-from">Images</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg><span class="mt-to">PDF</span></div>
+    </div>
+    <div class="mode-tab" data-mode="pdf-to-img">
+      <div class="mt-icon" style="background:var(--g);">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      </div>
+      <div class="mt-title">PDF → Images</div>
+      <div class="mt-arrow"><span class="mt-from">PDF Pages</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg><span class="mt-to">JPG/PNG</span></div>
+    </div>
+  </div>
+
+  <!-- DROP ZONE -->
+  <div class="drop-zone" id="drop-zone" style="max-width:860px;margin:0 auto 22px;">
+    <input type="file" id="file-input" accept="image/*" multiple/>
+    <div class="dz-inner">
+      <div class="dz-icon" style="background:var(--o);">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      </div>
+      <div class="dz-text">
+        <div class="dz-title" id="dz-title">Drop Images Here</div>
+        <div class="dz-hint" id="dz-hint">Batch convert · drag multiple files at once</div>
+        <div class="dz-cta" style="background:var(--o);">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          Choose Files
+        </div>
+        <div class="dz-chips" id="dz-chips">
+          <span class="chip" style="background:var(--c);">JPG</span>
+          <span class="chip" style="background:var(--c);">PNG</span>
+          <span class="chip" style="background:var(--c);">WebP</span>
+          <span class="chip" style="background:var(--c);">BMP</span>
+          <span class="chip" style="background:var(--c);">GIF</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS BAR -->
+  <div class="stats-bar" id="stats-bar" style="display:none;max-width:860px;margin:0 auto 18px;">
+    <div class="stat-item"><div class="stat-val" style="color:var(--o);" id="st-total">0</div><div class="stat-lbl">Files</div></div>
+    <div class="stat-item"><div class="stat-val" style="color:#3d8a00;" id="st-done">0</div><div class="stat-lbl">Converted</div></div>
+    <div class="stat-item"><div class="stat-val" id="st-in">—</div><div class="stat-lbl">Input Size</div></div>
+    <div class="stat-item"><div class="stat-val" style="color:#3d8a00;" id="st-out">—</div><div class="stat-lbl">Output Size</div></div>
+    <div class="stat-item"><div class="stat-val" style="color:#3d8a00;" id="st-save">—</div><div class="stat-lbl">Saved</div></div>
+  </div>
+
+  <!-- MAIN LAYOUT -->
+  <div class="main-layout" style="max-width:1200px;margin:0 auto;">
+
+    <!-- FILE LIST -->
+    <div class="file-workflow">
+      <!-- Empty -->
+      <div class="empty-state flc" id="empty-state">
+        <div class="es-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        </div>
+        <div class="es-title">No Files Yet</div>
+        <div class="es-sub">Drop files above to start converting</div>
+      </div>
+
+      <!-- File list card -->
+      <div class="flc" id="flc" style="display:none;">
+        <div class="flc-top">
+          <span class="flc-title">Files Queue</span>
+          <div class="flc-ctrls">
+            <span class="flc-badge" id="flc-badge">0 files</span>
+            <button class="ic-btn" id="btn-zip" disabled>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              ZIP All
+            </button>
+            <button class="ic-btn danger" id="btn-clear">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+              Clear
+            </button>
+          </div>
+        </div>
+        <ul class="file-list" id="file-list"></ul>
+        <div class="add-more-row">
+          <button class="add-more-btn">
+            <input type="file" id="add-more-input" accept="image/*" multiple/>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add More Files
+          </button>
+        </div>
+      </div>
+
+      <!-- Progress -->
+      <div class="prog-wrap" id="prog-wrap">
+        <div class="prog-spin"></div>
+        <div class="prog-title">Converting</div>
+        <div class="prog-msg" id="prog-msg">Processing...</div>
+        <div class="prog-bar-wrap"><div class="prog-bar" id="prog-bar"></div></div>
+        <div class="prog-pct" id="prog-pct">0%</div>
+      </div>
+
+      <div class="priv priv-old" style="margin-top:18px;border-radius:22px;">
+        <span>🔒 100% private · All conversion runs locally · EXIF stripped · Zero uploads · Works offline</span>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="right-panel">
+
+      <!-- Output Format -->
+      <div class="panel">
+        <div class="ph"><span class="ph-title">Output Format</span><span class="ph-chev"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+        <div class="pb">
+          <!-- img→img -->
+          <div id="fmt-img-img">
+            <div class="lbl">Convert to</div>
+            <div class="seg" id="seg-fmt">
+              <div class="so on" data-v="png">PNG</div>
+              <div class="so" data-v="jpeg">JPG</div>
+              <div class="so" data-v="webp">WebP</div>
+            </div>
+          </div>
+          <!-- img→pdf -->
+          <div id="fmt-img-pdf" style="display:none;">
+            <div class="lbl">Page size</div>
+            <div class="seg" id="seg-pdf-size"><div class="so on" data-v="A4">A4</div><div class="so" data-v="Letter">Letter</div><div class="so" data-v="fit">Fit</div></div>
+            <div style="margin-top:10px;"><div class="lbl">Orientation</div>
+            <div class="seg" id="seg-pdf-orient"><div class="so on" data-v="portrait">Portrait</div><div class="so" data-v="landscape">Land.</div><div class="so" data-v="auto">Auto</div></div></div>
+            <div class="tog-row" style="margin-top:10px;"><span class="tl">One PDF per image</span><button class="tog" id="tog-onepdf">OFF</button></div>
+          </div>
+          <!-- pdf→img -->
+          <div id="fmt-pdf-img" style="display:none;">
+            <div class="lbl">Image format</div>
+            <div class="seg" id="seg-pdf-fmt"><div class="so on" data-v="png">PNG</div><div class="so" data-v="jpeg">JPG</div></div>
+            <div style="margin-top:10px;"><div class="lbl">Render DPI</div>
+            <div class="seg" id="seg-pdf-scale"><div class="so" data-v="1">72dpi</div><div class="so on" data-v="2">144dpi</div><div class="so" data-v="3">216dpi</div><div class="so" data-v="4">288dpi</div></div></div>
+            <div style="margin-top:10px;"><div class="lbl">Page range</div>
+            <div class="pdf-range-row">
+              <input type="number" id="pdf-pg-from" placeholder="From" min="1"/>
+              <span class="pdf-range-sep">–</span>
+              <input type="number" id="pdf-pg-to" placeholder="To" min="1"/>
+            </div>
+            <div style="font-size:11px;color:var(--muted);font-weight:900;margin-top:5px;">Leave blank for all pages</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quality & Resize -->
+      <div class="panel">
+        <div class="ph"><span class="ph-title">Quality &amp; Resize</span><span class="ph-chev"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+        <div class="pb">
+          <div id="quality-row">
+            <div class="sl-top"><span class="sl-lbl">Quality</span><span class="sl-v" id="qual-v">92%</span></div>
+            <input type="range" id="sl-qual" min="10" max="100" value="92"/>
+          </div>
+          <div class="tog-row"><span class="tl">Resize output</span><button class="tog" id="tog-resize">OFF</button></div>
+          <div id="resize-opts" style="display:none;flex-direction:column;gap:10px;">
+            <div><div class="lbl">Max width (px)</div><input type="number" id="max-w" placeholder="e.g. 1920" min="1"/></div>
+            <div><div class="lbl">Max height (px)</div><input type="number" id="max-h" placeholder="e.g. 1080" min="1"/></div>
+            <div class="tog-row"><span class="tl">Keep aspect ratio</span><button class="tog on" id="tog-aspect">ON</button></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters & Adjustments -->
+      <div class="panel">
+        <div class="ph"><span class="ph-title">Filters &amp; Adjustments</span><span class="ph-chev"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+        <div class="pb">
+          <div>
+            <div class="lbl">Quick filters</div>
+            <div class="filter-chips" id="filter-chips">
+              <div class="fc" data-filter="none">None</div>
+              <div class="fc on" data-filter="normal">Normal</div>
+              <div class="fc" data-filter="grayscale">B&W</div>
+              <div class="fc" data-filter="sepia">Sepia</div>
+              <div class="fc" data-filter="invert">Invert</div>
+              <div class="fc" data-filter="warm">Warm</div>
+              <div class="fc" data-filter="cool">Cool</div>
+            </div>
+          </div>
+          <div><div class="sl-top"><span class="sl-lbl">Brightness</span><span class="sl-v" id="bri-v">100%</span></div><input type="range" id="sl-bri" min="0" max="200" value="100"/></div>
+          <div><div class="sl-top"><span class="sl-lbl">Contrast</span><span class="sl-v" id="con-v">100%</span></div><input type="range" id="sl-con" min="0" max="200" value="100"/></div>
+          <div><div class="sl-top"><span class="sl-lbl">Saturation</span><span class="sl-v" id="sat-v">100%</span></div><input type="range" id="sl-sat" min="0" max="200" value="100"/></div>
+          <div><div class="sl-top"><span class="sl-lbl">Sharpness</span><span class="sl-v" id="sha-v">0%</span></div><input type="range" id="sl-sha" min="0" max="100" value="0"/></div>
+          <div>
+            <div class="lbl">Rotation</div>
+            <div class="seg" id="seg-rot">
+              <div class="so on" data-v="0">0°</div>
+              <div class="so" data-v="90">90°</div>
+              <div class="so" data-v="180">180°</div>
+              <div class="so" data-v="270">270°</div>
+            </div>
+          </div>
+          <div class="tog-row"><span class="tl">Flip horizontal</span><button class="tog" id="tog-fliph">OFF</button></div>
+          <div class="tog-row"><span class="tl">Strip EXIF data</span><button class="tog on" id="tog-exif">ON</button></div>
+        </div>
+      </div>
+
+      <!-- Watermark -->
+      <div class="panel">
+        <div class="ph"><span class="ph-title">Watermark</span><span class="ph-chev"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+        <div class="pb">
+          <div class="tog-row"><span class="tl">Add watermark</span><button class="tog" id="tog-wm">OFF</button></div>
+          <div id="wm-opts" style="display:none;flex-direction:column;gap:10px;">
+            <div class="wm-preview"><span class="wm-text" id="wm-prev-text">CONFIDENTIAL</span></div>
+            <input type="text" id="wm-text" value="CONFIDENTIAL" placeholder="Watermark text..."/>
+            <div><div class="sl-top"><span class="sl-lbl">Opacity</span><span class="sl-v" id="wm-op-v">20%</span></div><input type="range" id="wm-op" min="5" max="80" value="20"/></div>
+            <div><div class="sl-top"><span class="sl-lbl">Size</span><span class="sl-v" id="wm-sz-v">14%</span></div><input type="range" id="wm-sz" min="3" max="30" value="14"/></div>
+            <div>
+              <div class="lbl">Position</div>
+              <div class="seg" id="seg-wm-pos" style="grid-template-columns:repeat(4,1fr);">
+                <div class="so" data-v="tl">↖</div><div class="so" data-v="tc">↑</div>
+                <div class="so" data-v="tr">↗</div><div class="so on" data-v="cc">●</div>
+                <div class="so" data-v="bl">↙</div><div class="so" data-v="bc">↓</div>
+                <div class="so" data-v="br">↘</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Batch Rename -->
+      <div class="panel">
+        <div class="ph"><span class="ph-title">Batch Rename</span><span class="ph-chev"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+        <div class="pb">
+          <div class="tog-row"><span class="tl">Custom rename</span><button class="tog" id="tog-rename">OFF</button></div>
+          <div id="rename-opts" style="display:none;flex-direction:column;gap:10px;">
+            <div><div class="lbl">Prefix</div><input type="text" id="rn-prefix" placeholder="e.g. converted_"/></div>
+            <div><div class="lbl">Suffix</div><input type="text" id="rn-suffix" placeholder="e.g. _final"/></div>
+            <div class="tog-row"><span class="tl">Add number sequence</span><button class="tog on" id="tog-rn-num">ON</button></div>
+            <div><div class="lbl" style="margin-bottom:7px;">Preview</div><div class="rename-preview" id="rename-preview">image_001.png</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="panel">
+        <div class="ph"><span class="ph-title">Actions</span><span class="ph-chev"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+        <div class="pb">
+          <button class="btn-main" id="btn-convert" disabled>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+            Convert All Files
+          </button>
+          <button class="btn-sec" id="btn-dl-zip" disabled>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download ZIP
+          </button>
+          <button class="btn-ghost-full" id="btn-reset">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.56"/></svg>
+            Clear All
+          </button>
+        </div>
+      </div>
+
+    </div>
+    <div class="priv privacy-wide">
+      <span>🔒 100% private · All conversion runs locally · EXIF stripped · Zero uploads · Works offline</span>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="/tools/file-converter/js/01-bootstrap.js"></script>
+<script src="/tools/file-converter/js/02-state.js"></script>
+<script src="/tools/file-converter/js/03-toast.js"></script>
+<script src="/tools/file-converter/js/04-mode-tabs.js"></script>
+<script src="/tools/file-converter/js/05-file-input.js"></script>
+<script src="/tools/file-converter/js/06-render-list.js"></script>
+<script src="/tools/file-converter/js/07-settings.js"></script>
+<script src="/tools/file-converter/js/08-convert.js"></script>
+<script src="/tools/file-converter/js/09-img-img.js"></script>
+<script src="/tools/file-converter/js/10-img-pdf.js"></script>
+<script src="/tools/file-converter/js/11-pdf-images.js"></script>
+<script src="/tools/file-converter/js/12-helpers.js"></script>
+<script src="/tools/file-converter/js/13-download.js"></script>
+<script src="/tools/file-converter/js/14-init.js"></script>
+</body>
+</html>

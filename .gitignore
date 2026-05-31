@@ -1,0 +1,11 @@
+node_modules/
+dist/
+*.log
+backup-before-*/
+legacy-original/
+.vercel/
+.env
+.env.local
+.DS_Store
+Thumbs.db
+desktop.ini
