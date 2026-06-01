@@ -21,7 +21,19 @@ function updateCompareClip() {
   compHandle.style.left=comparePct+'%';
 }
 document.getElementById('btn-compare').addEventListener('click',()=>setCompare(!compareActive));
-compHandle.addEventListener('mousedown',e=>{e.stopPropagation();cmpDragging=true;document.addEventListener('mousemove',onCmpDrag);document.addEventListener('mouseup',()=>{cmpDragging=false;document.removeEventListener('mousemove',onCmpDrag);},{once:true});});
+compHandle.addEventListener('pointerdown',e=>{
+  e.preventDefault();
+  e.stopPropagation();
+  cmpDragging=true;
+  compHandle.setPointerCapture?.(e.pointerId);
+  onCmpDrag(e);
+});
+compHandle.addEventListener('pointermove',onCmpDrag);
+compHandle.addEventListener('pointerup',e=>{
+  cmpDragging=false;
+  compHandle.releasePointerCapture?.(e.pointerId);
+});
+compHandle.addEventListener('pointercancel',()=>{cmpDragging=false;});
 function onCmpDrag(e) {
   if(!cmpDragging) return;
   const r=CS.getBoundingClientRect();
