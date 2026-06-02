@@ -103,6 +103,17 @@ const CDN_ASSETS = [
   'https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1/selfie_segmentation.js'
 ];
 
+const TOOL_ROUTE_FALLBACKS = {
+  '/tools/bg-remover': '/tools/bg-remover.html',
+  '/tools/file-converter': '/tools/file-converter.html',
+  '/tools/merge-pdf': '/tools/merge-pdf.html',
+  '/tools/image-compressor': '/tools/image-compress.html',
+  '/tools/image-compress': '/tools/image-compress.html',
+  '/tools/compress-pdf': '/tools/compress-pdf.html',
+  '/tools/scan-to-pdf': '/tools/scan-to-pdf.html',
+  '/tools/add-image-pdf': '/tools/add-image-pdf.html'
+};
+
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CORE_CACHE)
@@ -132,7 +143,7 @@ self.addEventListener('fetch', event => {
   if (url.pathname.startsWith('/api/')) return;
 
   if (request.mode === 'navigate') {
-    event.respondWith(networkFirst(request, '/index.html'));
+    event.respondWith(networkFirst(request, TOOL_ROUTE_FALLBACKS[url.pathname] || '/index.html'));
     return;
   }
 
