@@ -195,9 +195,9 @@ function upsampleAlphaMask(data, srcW, srcH, readAlpha) {
 function readBackupMaskAlpha(data, i) {
   const raw = Math.max(data[i], data[i + 1], data[i + 2], data[i + 3]);
   const p = raw / 255;
-  if(p <= 0.18) return 0;
-  if(p >= 0.42) return 255;
-  const t = (p - 0.18) / 0.24;
+  if(p <= 0.08) return 0;
+  if(p >= 0.24) return 255;
+  const t = (p - 0.08) / 0.16;
   return Math.round((t * t * (3 - 2 * t)) * 255);
 }
 
