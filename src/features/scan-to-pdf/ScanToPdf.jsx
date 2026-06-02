@@ -1,5 +1,3 @@
-import LegacyToolRedirect from '../shared/LegacyToolRedirect.jsx';
+import { createLegacyFeaturePage } from '../shared/createLegacyFeaturePage.jsx';
 
-export default function ScanToPdf() {
-  return <LegacyToolRedirect src="/tools/scan-to-pdf.html" />;
-}
+export default createLegacyFeaturePage('scan-to-pdf');

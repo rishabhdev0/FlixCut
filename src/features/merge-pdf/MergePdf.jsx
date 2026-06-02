@@ -1,5 +1,3 @@
-import LegacyToolRedirect from '../shared/LegacyToolRedirect.jsx';
+import { createLegacyFeaturePage } from '../shared/createLegacyFeaturePage.jsx';
 
-export default function MergePdf() {
-  return <LegacyToolRedirect src="/tools/merge-pdf.html" />;
-}
+export default createLegacyFeaturePage('merge-pdf');

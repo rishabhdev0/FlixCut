@@ -1,5 +1,3 @@
-import LegacyToolRedirect from '../shared/LegacyToolRedirect.jsx';
+import { createLegacyFeaturePage } from '../shared/createLegacyFeaturePage.jsx';
 
-export default function ImageCompressor() {
-  return <LegacyToolRedirect src="/tools/image-compress.html" />;
-}
+export default createLegacyFeaturePage('image-compressor');

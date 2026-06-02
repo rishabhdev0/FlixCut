@@ -2,7 +2,7 @@
 document.getElementById('btn-generate').addEventListener('click',generatePdf);
 
 async function generatePdf(){
-  if(!pages.length)return;
+  if(!pages.length){toast('Add photos before generating PDF');return;}
   const overlay=document.getElementById('proc-overlay');
   const msg=document.getElementById('proc-msg');
   const bar=document.getElementById('proc-bar');

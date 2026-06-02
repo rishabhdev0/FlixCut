@@ -1,5 +1,3 @@
-import LegacyToolRedirect from '../shared/LegacyToolRedirect.jsx';
+import { createLegacyFeaturePage } from '../shared/createLegacyFeaturePage.jsx';
 
-export default function BgRemover() {
-  return <LegacyToolRedirect src="/tools/bg-remover.html" />;
-}
+export default createLegacyFeaturePage('bg-remover');

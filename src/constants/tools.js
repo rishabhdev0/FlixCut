@@ -75,3 +75,7 @@ export const tools = [
 export function getToolByRoute(pathname) {
   return tools.find((tool) => tool.route === pathname || tool.aliases?.includes(pathname));
 }
+
+export function getToolById(id) {
+  return tools.find((tool) => tool.id === id);
+}

@@ -2,7 +2,7 @@
 document.getElementById('btn-compress').addEventListener('click',compressAll);
 
 async function compressAll(){
-  if(!files.length)return;
+  if(!files.length){toast('Add images before compressing');return;}
   document.getElementById('btn-compress').disabled=true;
   for(let i=0;i<files.length;i++){
     if(files[i].status==='done')continue;

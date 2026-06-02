@@ -2,7 +2,7 @@
 document.getElementById('btn-convert').addEventListener('click',convertAll);
 
 async function convertAll(){
-  if(!files.length)return;
+  if(!files.length){toast('Add files before converting');return;}
   const pw=document.getElementById('prog-wrap');const pm=document.getElementById('prog-msg');const pb=document.getElementById('prog-bar');const pp=document.getElementById('prog-pct');
   pw.classList.add('show');pb.style.width='0%';pp.textContent='0%';
 

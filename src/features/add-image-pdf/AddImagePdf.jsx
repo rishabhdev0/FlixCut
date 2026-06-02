@@ -1,5 +1,3 @@
-import LegacyToolRedirect from '../shared/LegacyToolRedirect.jsx';
+import { createLegacyFeaturePage } from '../shared/createLegacyFeaturePage.jsx';
 
-export default function AddImagePdf() {
-  return <LegacyToolRedirect src="/tools/add-image-pdf.html" />;
-}
+export default createLegacyFeaturePage('add-image-pdf');

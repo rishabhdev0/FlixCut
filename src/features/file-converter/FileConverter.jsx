@@ -1,5 +1,3 @@
-import LegacyToolRedirect from '../shared/LegacyToolRedirect.jsx';
+import { createLegacyFeaturePage } from '../shared/createLegacyFeaturePage.jsx';
 
-export default function FileConverter() {
-  return <LegacyToolRedirect src="/tools/file-converter.html" />;
-}
+export default createLegacyFeaturePage('file-converter');

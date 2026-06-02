@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'pixcut-offline-v1';
+const CACHE_VERSION = 'pixcut-offline-v2';
 const CORE_CACHE = `${CACHE_VERSION}-core`;
 const RUNTIME_CACHE = `${CACHE_VERSION}-runtime`;
 
@@ -10,6 +10,8 @@ const CORE_ASSETS = [
   '/favicon.ico',
   '/favicon.svg',
   '/responsive.css',
+  '/toolkit-core.css',
+  '/toolkit-runtime.js',
   '/tools/bg-remover.html',
   '/tools/file-converter.html',
   '/tools/merge-pdf.html',
@@ -147,6 +149,11 @@ self.addEventListener('fetch', event => {
     return;
   }
 
+  if (url.origin === self.location.origin && isFreshFirstAsset(url)) {
+    event.respondWith(networkFirst(request, '/index.html'));
+    return;
+  }
+
   if (url.origin === self.location.origin) {
     event.respondWith(cacheFirst(request));
     return;
@@ -174,6 +181,13 @@ async function cacheFirst(request) {
   const cache = await caches.open(RUNTIME_CACHE);
   cache.put(request, response.clone());
   return response;
+}
+
+function isFreshFirstAsset(url) {
+  return url.pathname === '/'
+    || url.pathname.endsWith('.html')
+    || url.pathname.endsWith('.css')
+    || url.pathname === '/sw.js';
 }
 
 async function staleWhileRevalidate(request) {
