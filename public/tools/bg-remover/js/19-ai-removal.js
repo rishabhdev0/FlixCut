@@ -1,13 +1,9 @@
-/* ════════════════════════════════════════
-   AI REMOVAL — complete, working version
-   ════════════════════════════════════════ */
 document.getElementById('run-ai-btn').addEventListener('click', runAI);
 
 async function runAI() {
   if(!originalPixels) return;
   cancelled = false;
 
-  // Show loading screen with animation
   showScreen('loading');
   const lbar   = document.getElementById('l-bar');
   const lmsg   = document.getElementById('l-msg');
@@ -16,26 +12,23 @@ async function runAI() {
   lbar.style.background = '';
 
   function setProgress(pct, stage, msg) {
-    lbar.style.width = pct+'%';
-    lpct.textContent = Math.round(pct)+'%';
+    lbar.style.width = pct + '%';
+    lpct.textContent = Math.round(pct) + '%';
     if(stage) lstage.textContent = stage;
-    if(msg)   lmsg.textContent   = msg;
+    if(msg) lmsg.textContent = msg;
   }
 
   setProgress(0, 'INITIALIZING', 'Waiting for AI library...');
 
-  // Wait up to 30s for the ES module to load
   let waited = 0;
   while(!window._segmentForeground && !window._removeBackground && waited < 30000) {
-    await new Promise(r=>setTimeout(r,200));
+    await new Promise(r => setTimeout(r, 200));
     waited += 200;
-    setProgress(Math.min(waited/300, 10), 'LOADING', 'Loading AI library...');
+    setProgress(Math.min(waited / 300, 10), 'LOADING', 'Loading AI library...');
   }
 
   if(!window._segmentForeground && !window._removeBackground) {
-    setProgress(100,'ERROR','AI library failed to load — check internet connection');
-    document.getElementById('l-bar').style.background='var(--r)';
-    setTimeout(()=>showScreen('editor'), 3000);
+    await runBackupAI(setProgress, new Error('Primary AI library failed to load'));
     return;
   }
 
@@ -43,103 +36,177 @@ async function runAI() {
   setProgress(12, 'PREPARING', 'Preparing image...');
 
   try {
-    // Build an adaptive AI proxy. The final download still keeps full original size.
+    await runImglyAI(setProgress);
+  } catch(err) {
+    console.error('AI error:', err);
+    await runBackupAI(setProgress, err);
+  }
+}
+
+async function runImglyAI(setProgress) {
+  const mem = navigator.deviceMemory || 4;
+  const MAX_LONG = mem <= 4 ? 1152 : 1408;
+  const MAX_AREA = mem <= 4 ? 1152 * 1152 : 1408 * 1408;
+  const sc = Math.min(1, MAX_LONG / Math.max(imgW, imgH), Math.sqrt(MAX_AREA / (imgW * imgH)));
+  const aiW = Math.max(1, Math.round(imgW * sc));
+  const aiH = Math.max(1, Math.round(imgH * sc));
+  const usingProxy = sc < 0.999;
+
+  const aiCvs = Object.assign(document.createElement('canvas'), {width: aiW, height: aiH});
+  aiCvs.getContext('2d').drawImage(origCvs, 0, 0, aiW, aiH);
+
+  if(cancelled) { showScreen('editor'); return; }
+  setProgress(18, 'CONVERTING', usingProxy ? `Creating ${aiW}x${aiH} AI proxy...` : 'Encoding image...');
+
+  const inputBlob = await new Promise(res => aiCvs.toBlob(res, 'image/jpeg', 0.92));
+  if(!inputBlob) throw new Error('Image encode failed');
+
+  if(cancelled) { showScreen('editor'); return; }
+
+  const cfg = {
+    ...(window._aiFastConfig || { model: 'small', device: 'cpu', output: { format: 'image/png', quality: 1 } }),
+    progress: (key, cur, tot) => {
+      if(cancelled || tot === 0) return;
+      const k = String(key);
+      const loading = k.includes('fetch') || k.includes('download') || k.includes('model');
+      const base = loading ? 20 : 55;
+      const span = loading ? 35 : 40;
+      const p = base + Math.min(span, (cur / tot) * span);
+      setProgress(
+        p,
+        loading ? 'DOWNLOADING' : 'PROCESSING',
+        loading ? `Downloading AI model... (${Math.round((cur / tot) * 100)}%)` : 'Creating subject mask with AI...'
+      );
+    }
+  };
+
+  setProgress(20, 'DOWNLOADING', 'Fetching AI model (cached after first use)...');
+
+  const resultBlob = window._segmentForeground
+    ? await window._segmentForeground(inputBlob, cfg)
+    : await window._removeBackground(inputBlob, cfg);
+
+  if(cancelled) { showScreen('editor'); return; }
+  setProgress(96, 'FINISHING', 'Applying mask...');
+  await applyImglyMaskBlob(resultBlob, aiW, aiH, usingProxy);
+
+  setProgress(100, 'DONE', 'Background removed!');
+  setTimeout(()=>{
+    showScreen('editor');
+    document.getElementById('pinfo').textContent = `AI ok (${imgW}x${imgH})`;
+    toast('AI removal complete');
+  }, 400);
+}
+
+async function applyImglyMaskBlob(resultBlob, aiW, aiH, usingProxy) {
+  const resultURL = URL.createObjectURL(resultBlob);
+  await new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const tc = Object.assign(document.createElement('canvas'), {width: aiW, height: aiH});
+      tc.getContext('2d').drawImage(img, 0, 0, aiW, aiH);
+      const rd = tc.getContext('2d').getImageData(0, 0, aiW, aiH);
+      pushUndo();
+      upsampleAlphaMask(rd.data, aiW, aiH, i => rd.data[i + 3]);
+      if(imgW * imgH <= 3000000) blurMask(usingProxy ? 1.2 : 0.6);
+      URL.revokeObjectURL(resultURL);
+      renderResult();
+      resolve();
+    };
+    img.onerror = () => { URL.revokeObjectURL(resultURL); reject(new Error('Result image failed')); };
+    img.src = resultURL;
+  });
+}
+
+async function runBackupAI(setProgress, primaryError) {
+  if(cancelled) { showScreen('editor'); return; }
+  console.warn('Using backup AI removal:', primaryError);
+  try {
+    setProgress(18, 'BACKUP AI', 'Loading backup AI model...');
+    await loadSelfieSegmentationScript();
+    if(!window.SelfieSegmentation) throw new Error('Backup AI unavailable');
+
     const mem = navigator.deviceMemory || 4;
-    const MAX_LONG = mem <= 4 ? 1152 : 1408;
-    const MAX_AREA = mem <= 4 ? 1152*1152 : 1408*1408;
-    const sc  = Math.min(1, MAX_LONG / Math.max(imgW, imgH), Math.sqrt(MAX_AREA / (imgW * imgH)));
+    const MAX_LONG = mem <= 4 ? 960 : 1280;
+    const sc = Math.min(1, MAX_LONG / Math.max(imgW, imgH));
     const aiW = Math.max(1, Math.round(imgW * sc));
     const aiH = Math.max(1, Math.round(imgH * sc));
-    const usingProxy = sc < 0.999;
-
-    // Scale the already-loaded original canvas for AI without another full-size copy.
-    const aiCvs = Object.assign(document.createElement('canvas'),{width:aiW,height:aiH});
+    const aiCvs = Object.assign(document.createElement('canvas'), {width: aiW, height: aiH});
     aiCvs.getContext('2d').drawImage(origCvs, 0, 0, aiW, aiH);
 
-    if(cancelled) { showScreen('editor'); return; }
-    setProgress(18, 'CONVERTING', usingProxy ? `Creating ${aiW}×${aiH} AI proxy...` : 'Encoding image...');
+    setProgress(38, 'BACKUP AI', 'Creating subject mask...');
+    const segmenter = new window.SelfieSegmentation({
+      locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1/${file}`
+    });
+    segmenter.setOptions({modelSelection: 1, selfieMode: false});
 
-    const inputBlob = await new Promise(res => aiCvs.toBlob(res, 'image/jpeg', 0.92));
-    if(!inputBlob) throw new Error('Image encode failed');
-
-    if(cancelled) { showScreen('editor'); return; }
-
-    const cfg = {
-      ...(window._aiFastConfig || { model: 'small', device: 'cpu', output: { format: 'image/png', quality: 1 } }),
-      progress: (key, cur, tot) => {
-        if(cancelled) return;
-        if(tot === 0) return;
-        const k = String(key);
-        const loading = k.includes('fetch') || k.includes('download') || k.includes('model');
-        const base = loading ? 20 : 55;
-        const span = loading ? 35 : 40;
-        const p = base + Math.min(span, (cur/tot)*span);
-        const stage = loading ? 'DOWNLOADING' : 'PROCESSING';
-        const msg   = loading
-          ? `Downloading AI model... (${Math.round((cur/tot)*100)}%)`
-          : 'Creating subject mask with AI...';
-        setProgress(p, stage, msg);
-      }
-    };
-
-    setProgress(20, 'DOWNLOADING', 'Fetching AI model (cached after first use)...');
-
-    const resultBlob = window._segmentForeground
-      ? await window._segmentForeground(inputBlob, cfg)
-      : await window._removeBackground(inputBlob, cfg);
-
-    if(cancelled) { showScreen('editor'); return; }
-    setProgress(96, 'FINISHING', 'Applying mask...');
-
-    // Decode result
-    const resultURL = URL.createObjectURL(resultBlob);
-    await new Promise((resolve, reject) => {
-      const img = new Image();
-      img.onload = () => {
-        // Read alpha at AI resolution
-        const tc = Object.assign(document.createElement('canvas'),{width:aiW,height:aiH});
-        tc.getContext('2d').drawImage(img, 0, 0, aiW, aiH);
-        const rd = tc.getContext('2d').getImageData(0, 0, aiW, aiH);
-
-        pushUndo();
-
-        // Upsample mask back to full resolution without resizing the final image.
-        const sxMap = new Uint32Array(imgW);
-        for(let x=0;x<imgW;x++) sxMap[x] = Math.min(aiW-1, Math.floor(x*aiW/imgW)) * 4;
-        for(let y=0;y<imgH;y++) {
-          const syOff = Math.min(aiH-1, Math.floor(y*aiH/imgH)) * aiW * 4;
-          const rowOff = y * imgW;
-          for(let x=0;x<imgW;x++) {
-            mask[rowOff+x] = rd.data[syOff + sxMap[x] + 3];
-          }
-        }
-        if(imgW * imgH <= 3000000) blurMask(usingProxy ? 1.2 : 0.6);
-
-        URL.revokeObjectURL(resultURL);
-        renderResult();
-        setProgress(100, 'DONE', 'Background removed!');
-        setTimeout(()=>{
-          showScreen('editor');
-          document.getElementById('pinfo').textContent = `AI ✓ (${imgW}×${imgH})`;
-          toast('AI removal complete ✓');
-        }, 400);
-        resolve();
-      };
-      img.onerror = () => { URL.revokeObjectURL(resultURL); reject(new Error('Result image failed')); };
-      img.src = resultURL;
+    const results = await new Promise((resolve, reject) => {
+      let done = false;
+      const timer = setTimeout(() => { if(!done) reject(new Error('Backup AI timed out')); }, 30000);
+      segmenter.onResults(res => {
+        done = true;
+        clearTimeout(timer);
+        resolve(res);
+      });
+      segmenter.send({image: aiCvs}).catch(reject);
     });
 
+    if(cancelled) { segmenter.close?.(); showScreen('editor'); return; }
+    if(!results || !results.segmentationMask) throw new Error('Backup AI mask failed');
+
+    setProgress(82, 'BACKUP AI', 'Applying backup mask...');
+    const maskCvs = Object.assign(document.createElement('canvas'), {width: aiW, height: aiH});
+    const maskCtx = maskCvs.getContext('2d');
+    maskCtx.drawImage(results.segmentationMask, 0, 0, aiW, aiH);
+    const md = maskCtx.getImageData(0, 0, aiW, aiH).data;
+
+    pushUndo();
+    upsampleAlphaMask(md, aiW, aiH, i => Math.round((md[i] + md[i + 1] + md[i + 2]) / 3));
+    if(imgW * imgH <= 3000000) blurMask(1.1);
+    segmenter.close?.();
+    renderResult();
+
+    setProgress(100, 'DONE', 'Background removed with backup AI!');
+    setTimeout(() => {
+      showScreen('editor');
+      document.getElementById('pinfo').textContent = `AI backup ok (${imgW}x${imgH})`;
+      toast('Backup AI removal complete');
+    }, 400);
   } catch(err) {
-    if(!cancelled) {
-      console.error('AI error:', err);
-      setProgress(100, 'ERROR', '⚠ ' + (err.message||'Unknown error'));
-      document.getElementById('l-bar').style.background='var(--r)';
-      setTimeout(()=>showScreen('editor'), 3000);
+    console.error('Backup AI error:', err);
+    setProgress(100, 'ERROR', 'AI removal failed: ' + (err.message || 'Unknown error'));
+    document.getElementById('l-bar').style.background = 'var(--r)';
+    setTimeout(() => showScreen('editor'), 3000);
+  }
+}
+
+function upsampleAlphaMask(data, srcW, srcH, readAlpha) {
+  const sxMap = new Uint32Array(imgW);
+  for(let x = 0; x < imgW; x++) sxMap[x] = Math.min(srcW - 1, Math.floor(x * srcW / imgW)) * 4;
+  for(let y = 0; y < imgH; y++) {
+    const syOff = Math.min(srcH - 1, Math.floor(y * srcH / imgH)) * srcW * 4;
+    const rowOff = y * imgW;
+    for(let x = 0; x < imgW; x++) {
+      mask[rowOff + x] = Math.max(0, Math.min(255, readAlpha(syOff + sxMap[x])));
     }
   }
 }
 
-document.getElementById('l-cancel').addEventListener('click',()=>{
-  cancelled=true;
+function loadSelfieSegmentationScript() {
+  if(window.SelfieSegmentation) return Promise.resolve();
+  if(window._selfieSegmentationLoading) return window._selfieSegmentationLoading;
+  window._selfieSegmentationLoading = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1/selfie_segmentation.js';
+    script.async = true;
+    script.onload = resolve;
+    script.onerror = () => reject(new Error('Backup AI library failed to load'));
+    document.head.appendChild(script);
+  });
+  return window._selfieSegmentationLoading;
+}
+
+document.getElementById('l-cancel').addEventListener('click', () => {
+  cancelled = true;
   showScreen('editor');
 });
