@@ -161,8 +161,8 @@ async function runBackupAI(setProgress, primaryError) {
     const md = maskCtx.getImageData(0, 0, aiW, aiH).data;
 
     pushUndo();
-    upsampleAlphaMask(md, aiW, aiH, i => Math.round((md[i] + md[i + 1] + md[i + 2]) / 3));
-    if(imgW * imgH <= 3000000) blurMask(1.1);
+    upsampleAlphaMask(md, aiW, aiH, readBackupMaskAlpha);
+    if(imgW * imgH <= 3000000) blurMask(0.7);
     segmenter.close?.();
     renderResult();
 
@@ -190,6 +190,15 @@ function upsampleAlphaMask(data, srcW, srcH, readAlpha) {
       mask[rowOff + x] = Math.max(0, Math.min(255, readAlpha(syOff + sxMap[x])));
     }
   }
+}
+
+function readBackupMaskAlpha(data, i) {
+  const raw = Math.max(data[i], data[i + 1], data[i + 2], data[i + 3]);
+  const p = raw / 255;
+  if(p <= 0.18) return 0;
+  if(p >= 0.42) return 255;
+  const t = (p - 0.18) / 0.24;
+  return Math.round((t * t * (3 - 2 * t)) * 255);
 }
 
 function loadSelfieSegmentationScript() {
