@@ -18,17 +18,80 @@ async function runAI() {
     if(msg) lmsg.textContent = msg;
   }
 
-  setProgress(0, 'INITIALIZING', 'Waiting for AI library...');
+  try {
+    await runServerAI(setProgress);
+  } catch(err) {
+    console.warn('Server AI unavailable, using browser AI:', err);
+    await runBrowserAI(setProgress, err);
+  }
+}
+
+async function runServerAI(setProgress) {
+  setProgress(8, 'SERVER AI', 'Sending image to secure AI remover...');
+  const inputBlob = await imageBlobForServer();
+  if(cancelled) { showScreen('editor'); return; }
+
+  const response = await fetch('/api/remove-background', {
+    method: 'POST',
+    headers: {'Content-Type': inputBlob.type || 'image/jpeg'},
+    body: inputBlob
+  });
+
+  if(!response.ok) {
+    let message = 'Server AI failed';
+    try {
+      const data = await response.json();
+      message = data.error || message;
+    } catch {}
+    throw new Error(message);
+  }
+
+  setProgress(84, 'SERVER AI', 'Applying clean AI mask...');
+  const resultBlob = await response.blob();
+  await applyServerMaskBlob(resultBlob);
+  setProgress(100, 'DONE', 'Background removed!');
+  setTimeout(()=>{
+    showScreen('editor');
+    document.getElementById('pinfo').textContent = `AI ok (${imgW}x${imgH})`;
+    toast('AI removal complete');
+  }, 400);
+}
+
+async function imageBlobForServer() {
+  return await new Promise(resolve => origCvs.toBlob(resolve, 'image/jpeg', 0.95));
+}
+
+async function applyServerMaskBlob(resultBlob) {
+  const resultURL = URL.createObjectURL(resultBlob);
+  await new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const tc = Object.assign(document.createElement('canvas'), {width: imgW, height: imgH});
+      tc.getContext('2d').drawImage(img, 0, 0, imgW, imgH);
+      const rd = tc.getContext('2d').getImageData(0, 0, imgW, imgH).data;
+      pushUndo();
+      for(let i = 0; i < mask.length; i++) mask[i] = rd[i * 4 + 3];
+      URL.revokeObjectURL(resultURL);
+      renderResult();
+      resolve();
+    };
+    img.onerror = () => { URL.revokeObjectURL(resultURL); reject(new Error('Server AI result failed')); };
+    img.src = resultURL;
+  });
+}
+
+async function runBrowserAI(setProgress, serverError) {
+  setProgress(0, 'INITIALIZING', 'Waiting for browser AI library...');
 
   let waited = 0;
   while(!window._segmentForeground && !window._removeBackground && waited < 30000) {
     await new Promise(r => setTimeout(r, 200));
     waited += 200;
-    setProgress(Math.min(waited / 300, 10), 'LOADING', 'Loading AI library...');
+    setProgress(Math.min(waited / 300, 10), 'LOADING', 'Loading browser AI...');
   }
 
   if(!window._segmentForeground && !window._removeBackground) {
-    await runBackupAI(setProgress, new Error('Primary AI library failed to load'));
+    await runBackupAI(setProgress, serverError || new Error('Primary AI library failed to load'));
     return;
   }
 
@@ -38,7 +101,7 @@ async function runAI() {
   try {
     await runImglyAI(setProgress);
   } catch(err) {
-    console.error('AI error:', err);
+    console.error('Browser AI error:', err);
     await runBackupAI(setProgress, err);
   }
 }

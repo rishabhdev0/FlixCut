@@ -37,7 +37,7 @@ FlixCut is built around local-first processing:
 - PDF encryption runs locally through a WebAssembly QPDF build.
 - Security headers are included for supported hosting platforms.
 
-> Note: AI background removal uses a browser-side AI package and may download model files from a CDN on first use. After that, browser caching can reduce repeated loading.
+> Note: For production-quality AI background removal on Vercel, set `REMOVE_BG_API_KEY` in the Vercel environment. The app falls back to browser-side AI when the server key is not configured.
 
 ## 🧱 Tech Stack
 
@@ -200,6 +200,12 @@ npm run build
 ```
 
 Then deploy the project root. Vercel will use the included `vercel.json` headers.
+
+For production AI background removal, add this environment variable in Vercel:
+
+```bash
+REMOVE_BG_API_KEY=your_remove_bg_api_key
+```
 
 ## ⚠️ Limitations
 
