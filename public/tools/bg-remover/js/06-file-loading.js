@@ -1,16 +1,22 @@
 /* ── File loading ── */
-document.getElementById('file-input').addEventListener('change', e=>loadFile(e.target.files[0]));
+document.getElementById('file-input').addEventListener('change', e=>loadSelectedFile(e.target.files));
 const dz = document.getElementById('drop-zone');
 dz.addEventListener('dragover', e=>{e.preventDefault();dz.classList.add('dov');});
 dz.addEventListener('dragleave', ()=>dz.classList.remove('dov'));
-dz.addEventListener('drop', e=>{e.preventDefault();dz.classList.remove('dov');loadFile(e.dataTransfer.files[0]);});
+dz.addEventListener('drop', e=>{e.preventDefault();dz.classList.remove('dov');loadSelectedFile(e.dataTransfer.files);});
 document.addEventListener('paste', e=>{
-  const f = [...(e.clipboardData?.files||[])].find(f=>f.type.startsWith('image/'));
+  const f = [...(e.clipboardData?.files||[])].find(f=>window.PixCutSecurity?.isSafeImageFile?.(f) || f.type.startsWith('image/'));
   if(f) loadFile(f);
 });
 
+function loadSelectedFile(fileList) {
+  const result = window.PixCutSecurity.validateFiles(fileList, {kinds:['image'], maxFiles:1});
+  if(!result.allowed.length){window.PixCutSecurity.showValidationResult(result, {fallback:'Choose a JPG, PNG, WebP, GIF, BMP, HEIC, or HEIF image.'});return;}
+  loadFile(result.allowed[0]);
+}
+
 function loadFile(file) {
-  if(!file || !file.type.startsWith('image/')) return;
+  if(!file || !window.PixCutSecurity.isSafeImageFile(file)){toast('Choose a JPG, PNG, WebP, GIF, BMP, HEIC, or HEIF image.');return;}
   if(file.size > MAX_IMAGE_FILE_BYTES){toast('Image too large. Max 60 MB.');return;}
   cancelled = false;
   const reader = new FileReader();

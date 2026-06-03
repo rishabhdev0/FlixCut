@@ -7,14 +7,17 @@ dz.addEventListener('dragleave',()=>dz.classList.remove('dov'));
 dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('dov');addFiles(e.dataTransfer.files);});
 
 async function addFiles(list){
-  let arr=[...list].filter(f=>f.type.startsWith('image/'));
-  if(!arr.length){toast('Only image files supported');return;}
-  arr=arr.filter(f=>f.size<=MAX_SINGLE_FILE_BYTES);
-  if(!arr.length){toast('Image too large. Max 60 MB each.');return;}
   const used=files.reduce((a,f)=>a+f.size,0);
-  arr=arr.slice(0,Math.max(0,MAX_FILES-files.length));
-  arr=arr.filter((f,i)=>used+arr.slice(0,i+1).reduce((a,x)=>a+x.size,0)<=MAX_BATCH_BYTES);
-  if(!arr.length){toast('Batch limit reached. Max 75 images / 500 MB.');return;}
+  const result=window.PixCutSecurity.validateFiles(list,{
+    kinds:['image'],
+    maxFiles:MAX_FILES,
+    currentCount:files.length,
+    maxBatchBytes:MAX_BATCH_BYTES,
+    currentBytes:used
+  });
+  let arr=result.allowed;
+  if(!arr.length){window.PixCutSecurity.showValidationResult(result,{fallback:'Only JPG, PNG, WebP, GIF, BMP, HEIC, or HEIF images are supported.'});return;}
+  if(result.rejected.length)toast(`${result.rejected.length} image${result.rejected.length>1?'s':''} skipped. First: ${result.rejected[0].reason}`);
   for(const f of arr){
     const thumb=await makeThumb(f);
     files.push({id:Date.now()+Math.random(),file:f,name:f.name,size:f.size,type:f.type,thumb,status:'wait',outBlob:null,outSize:0});

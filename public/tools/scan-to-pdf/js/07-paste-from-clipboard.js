@@ -4,21 +4,32 @@ document.addEventListener('paste',async e=>{
   const imgItem=items.find(it=>it.type.startsWith('image/'));
   if(!imgItem)return;
   const blob=imgItem.getAsFile();if(!blob)return;
+  const pasted=window.PixCutSecurity.validateFiles([blob],{
+    kinds:['image'],
+    maxFiles:MAX_FILES,
+    currentCount:pages.length,
+    maxBatchBytes:MAX_BATCH_BYTES,
+    currentBytes:pages.reduce((a,p)=>a+(p.byteSize||0),0)
+  });
+  if(!pasted.allowed.length){window.PixCutSecurity.showValidationResult(pasted,{fallback:'Pasted image is not supported.'});return;}
   const rawUrl=await new Promise(res=>{const r=new FileReader();r.onload=ev=>res(ev.target.result);r.readAsDataURL(blob);});
   const processedUrl=await applyFilter(rawUrl);
-  addPage(rawUrl,processedUrl);
+  addPage(rawUrl,processedUrl,blob.size);
   toast('Page added from clipboard ✓');
 });
 
 async function handleFiles(list){
-  let arr=[...list].filter(f=>f.type.startsWith('image/'));
-  if(!arr.length){toast('Only image files supported');return;}
-  arr=arr.filter(f=>f.size<=MAX_SINGLE_FILE_BYTES);
-  if(!arr.length){toast('Image too large. Max 60 MB each.');return;}
   const used=pages.reduce((a,p)=>a+(p.byteSize||0),0);
-  arr=arr.slice(0,Math.max(0,MAX_FILES-pages.length));
-  arr=arr.filter((f,i)=>used+arr.slice(0,i+1).reduce((a,x)=>a+x.size,0)<=MAX_BATCH_BYTES);
-  if(!arr.length){toast('Batch limit reached. Max 60 pages / 500 MB.');return;}
+  const result=window.PixCutSecurity.validateFiles(list,{
+    kinds:['image'],
+    maxFiles:MAX_FILES,
+    currentCount:pages.length,
+    maxBatchBytes:MAX_BATCH_BYTES,
+    currentBytes:used
+  });
+  let arr=result.allowed;
+  if(!arr.length){window.PixCutSecurity.showValidationResult(result,{fallback:'Only JPG, PNG, WebP, GIF, BMP, HEIC, or HEIF images are supported.'});return;}
+  if(result.rejected.length)toast(`${result.rejected.length} image${result.rejected.length>1?'s':''} skipped. First: ${result.rejected[0].reason}`);
   for(const f of arr){
     const rawUrl=await fileToDataUrl(f);
     const processedUrl=await applyFilter(rawUrl);

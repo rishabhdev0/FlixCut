@@ -9,14 +9,17 @@ dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('dov');add
 const SUPPORTED=new Set(['application/pdf','image/jpeg','image/jpg','image/png','image/webp','image/gif','image/bmp','image/tiff']);
 
 async function addFiles(fileList){
-  let arr=[...fileList].filter(f=>SUPPORTED.has(f.type)||f.name.toLowerCase().endsWith('.pdf'));
-  if(!arr.length){toast('No supported files found');return;}
-  arr=arr.filter(f=>f.size<=MAX_SINGLE_FILE_BYTES);
-  if(!arr.length){toast('File too large. Max 200 MB each.');return;}
   const used=files.reduce((a,f)=>a+f.size,0);
-  arr=arr.slice(0,Math.max(0,MAX_FILES-files.length));
-  arr=arr.filter((f,i)=>used+arr.slice(0,i+1).reduce((a,x)=>a+x.size,0)<=MAX_BATCH_BYTES);
-  if(!arr.length){toast('Batch limit reached. Max 75 files / 800 MB.');return;}
+  const result=window.PixCutSecurity.validateFiles(fileList,{
+    kinds:['pdf','image'],
+    maxFiles:MAX_FILES,
+    currentCount:files.length,
+    maxBatchBytes:MAX_BATCH_BYTES,
+    currentBytes:used
+  });
+  let arr=result.allowed;
+  if(!arr.length){window.PixCutSecurity.showValidationResult(result,{fallback:'Add PDFs or supported image files.'});return;}
+  if(result.rejected.length)toast(`${result.rejected.length} file${result.rejected.length>1?'s':''} skipped. First: ${result.rejected[0].reason}`);
   const existingNames=new Set(files.map(f=>f.name+f.size));
   for(const f of arr){
     const id=`${Date.now()}-${Math.random().toString(36).slice(2)}`;

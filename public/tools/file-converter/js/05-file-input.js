@@ -7,16 +7,17 @@ dz.addEventListener('dragleave',()=>dz.classList.remove('dov'));
 dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('dov');addFiles(e.dataTransfer.files);});
 
 async function addFiles(list){
-  const allowed=convMode==='pdf-to-img'
-    ? f=>f.type==='application/pdf'||f.name.toLowerCase().endsWith('.pdf')
-    : f=>f.type.startsWith('image/');
-  let arr=[...list].filter(allowed);if(!arr.length){toast('No supported files found');return;}
-  arr=arr.filter(f=>f.size<=MAX_SINGLE_FILE_BYTES);
-  if(!arr.length){toast('File too large. Max 150 MB each.');return;}
   const used=files.reduce((a,f)=>a+f.size,0);
-  arr=arr.slice(0,Math.max(0,MAX_FILES-files.length));
-  arr=arr.filter((f,i)=>used+arr.slice(0,i+1).reduce((a,x)=>a+x.size,0)<=MAX_BATCH_BYTES);
-  if(!arr.length){toast('Batch limit reached. Max 50 files / 600 MB.');return;}
+  const result=window.PixCutSecurity.validateFiles(list,{
+    kinds:convMode==='pdf-to-img'?['pdf']:['image'],
+    maxFiles:MAX_FILES,
+    currentCount:files.length,
+    maxBatchBytes:MAX_BATCH_BYTES,
+    currentBytes:used
+  });
+  let arr=result.allowed;
+  if(!arr.length){window.PixCutSecurity.showValidationResult(result,{fallback:'No supported files found.'});return;}
+  if(result.rejected.length)toast(`${result.rejected.length} file${result.rejected.length>1?'s':''} skipped. First: ${result.rejected[0].reason}`);
   for(const f of arr){
     const thumb=f.type.startsWith('image/')?await makeThumb(f):null;
     files.push({id:Date.now()+Math.random(),file:f,name:f.name,size:f.size,type:f.type||'application/pdf',thumb,converted:[],status:'wait',outSize:0});

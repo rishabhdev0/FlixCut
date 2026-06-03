@@ -147,6 +147,6 @@ dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('dov');han
 
 document.getElementById('btn-add-more').addEventListener('click',()=>{
   const inp=document.createElement('input');
-  inp.type='file';inp.accept='image/*';inp.multiple=true;
+  inp.type='file';inp.accept='image/jpeg,image/png,image/webp,image/gif,image/bmp,image/heic,image/heif,.jpg,.jpeg,.png,.webp,.gif,.bmp,.heic,.heif';inp.multiple=true;
   inp.onchange=e=>handleFiles(e.target.files);inp.click();
 });

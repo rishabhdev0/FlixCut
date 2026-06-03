@@ -8,7 +8,8 @@ document.querySelectorAll('.mode-tab').forEach(tab=>{
 });
 
 function updateModeUI(){
-  const accepts={'img-to-img':'image/jpeg,image/png,image/webp,image/gif,image/bmp','img-to-pdf':'image/jpeg,image/png,image/webp,image/gif,image/bmp','pdf-to-img':'application/pdf,.pdf'};
+  const imageAccept='image/jpeg,image/png,image/webp,image/gif,image/bmp,image/heic,image/heif,.jpg,.jpeg,.png,.webp,.gif,.bmp,.heic,.heif';
+  const accepts={'img-to-img':imageAccept,'img-to-pdf':imageAccept,'pdf-to-img':'application/pdf,.pdf'};
   document.getElementById('file-input').accept=accepts[convMode];
   document.getElementById('add-more-input').accept=accepts[convMode];
   const titles={'img-to-img':'Drop Images Here','img-to-pdf':'Drop Images Here','pdf-to-img':'Drop PDFs Here'};

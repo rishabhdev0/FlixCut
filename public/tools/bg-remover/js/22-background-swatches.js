@@ -10,7 +10,8 @@ document.querySelectorAll('.sw').forEach(s=>{
 document.getElementById('bg-img-btn').addEventListener('click',()=>document.getElementById('bg-img-input').click());
 document.getElementById('bg-img-input').addEventListener('change',function(){
   const f=this.files[0];if(!f)return;
-  if(!f.type.startsWith('image/') || f.size > MAX_IMAGE_FILE_BYTES){toast('Background image too large or unsupported');return;}
+  const result=window.PixCutSecurity.validateFiles([f],{kinds:['image'],maxFiles:1});
+  if(!result.allowed.length){window.PixCutSecurity.showValidationResult(result,{fallback:'Background image too large or unsupported.'});return;}
   const img=new Image();
   const url=URL.createObjectURL(f);
   img.onload=()=>{URL.revokeObjectURL(url);bgImg=img;bgColor='custom';document.querySelectorAll('.sw').forEach(x=>x.classList.remove('on'));drawBg();renderResult();};
